@@ -1,0 +1,19 @@
+{
+  "name": "personal-page",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "个人知识空间 — 基于 Astro 的静态站点，部署于 GitHub Pages",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "fetch:github": "node scripts/fetch-github.mjs"
+  },
+  "dependencies": {
+    "astro": "^5.0.0",
+    "unist-util-visit": "^5.0.0"
+  }
+}

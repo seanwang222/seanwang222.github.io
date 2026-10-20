@@ -1,0 +1,189 @@
+{
+  "fetchedAt": "2026-10-19T14:40:20.811Z",
+  "user": {
+    "login": "wangsichen222",
+    "name": "SeanHub",
+    "avatar": "https://avatars.githubusercontent.com/u/59314215?v=4",
+    "bio": null,
+    "location": "Hefei, China",
+    "createdAt": "2019-12-28T15:17:04Z",
+    "followers": 1,
+    "publicRepos": 2
+  },
+  "totals": {
+    "commits": 24,
+    "activeDays": 8,
+    "longestStreak": 3,
+    "currentStreak": 3,
+    "firstCommit": "2024-04-25T12:46:46Z",
+    "lastCommit": "2026-10-18T03:02:54Z",
+    "trackedRepos": 2
+  },
+  "daily": [
+    {
+      "date": "2024-04-25",
+      "count": 6
+    },
+    {
+      "date": "2026-02-21",
+      "count": 1
+    },
+    {
+      "date": "2026-10-08",
+      "count": 1
+    },
+    {
+      "date": "2026-10-12",
+      "count": 4
+    },
+    {
+      "date": "2026-10-14",
+      "count": 1
+    },
+    {
+      "date": "2026-10-16",
+      "count": 3
+    },
+    {
+      "date": "2026-10-17",
+      "count": 4
+    },
+    {
+      "date": "2026-10-18",
+      "count": 4
+    }
+  ],
+  "hourly": [
+    1,
+    1,
+    0,
+    0,
+    1,
+    0,
+    0,
+    0,
+    0,
+    1,
+    2,
+    6,
+    0,
+    0,
+    1,
+    0,
+    0,
+    1,
+    0,
+    0,
+    4,
+    1,
+    1,
+    4
+  ],
+  "weekday": [
+    4,
+    0,
+    1,
+    7,
+    3,
+    5,
+    4
+  ],
+  "languages": [
+    {
+      "name": "JavaScript",
+      "bytes": 441633,
+      "percent": 99.2
+    },
+    {
+      "name": "CSS",
+      "bytes": 2584,
+      "percent": 0.6
+    },
+    {
+      "name": "Shell",
+      "bytes": 726,
+      "percent": 0.2
+    },
+    {
+      "name": "HTML",
+      "bytes": 438,
+      "percent": 0.1
+    }
+  ],
+  "repos": [
+    {
+      "name": "DayMark",
+      "description": "每日打卡 · 待办清单 · 日程管理桌面应用（React 18 + Vite 4 + Electron 44，坚果云 WebDAV 同步，本地优先）",
+      "url": "https://github.com/wangsichen222/DayMark",
+      "stars": 0,
+      "language": "JavaScript",
+      "pushedAt": "2026-10-18T03:03:42Z",
+      "createdAt": "2026-10-12T03:06:20Z",
+      "commits": 17,
+      "lastMessage": "feat: 提醒里的完成项按计划完成日取舍：按时留灰、逾期补做退出",
+      "lastCommitAt": "2026-10-18T03:02:54Z"
+    },
+    {
+      "name": "wangsichen222",
+      "description": "",
+      "url": "https://github.com/wangsichen222/wangsichen222",
+      "stars": 0,
+      "language": "—",
+      "pushedAt": "2026-02-21T12:27:06Z",
+      "createdAt": "2024-04-25T12:46:46Z",
+      "commits": 7,
+      "lastMessage": "Update README.md",
+      "lastCommitAt": "2026-02-21T12:27:05Z"
+    }
+  ],
+  "recent": [
+    {
+      "sha": "aafe695",
+      "repo": "DayMark",
+      "message": "feat: 提醒里的完成项按计划完成日取舍：按时留灰、逾期补做退出",
+      "date": "2026-10-18T03:02:54Z"
+    },
+    {
+      "sha": "9d0b255",
+      "repo": "DayMark",
+      "message": "fix: 提醒里的行动勾掉后不再消失，改为与其他分区一致的划掉变灰",
+      "date": "2026-10-18T01:50:38Z"
+    },
+    {
+      "sha": "dd3379f",
+      "repo": "DayMark",
+      "message": "feat: 提醒剔除今天到期并改紫色，季度/年度分母按区间天数",
+      "date": "2026-10-17T20:33:35Z"
+    },
+    {
+      "sha": "c423834",
+      "repo": "DayMark",
+      "message": "refactor: 按坚果云真实语义重写远程目录与连接自检",
+      "date": "2026-10-17T16:12:47Z"
+    },
+    {
+      "sha": "5bca9e7",
+      "repo": "DayMark",
+      "message": "feat: 远程目录按 WebDAV 语义归一化，409 带出实际请求路径",
+      "date": "2026-10-17T14:10:36Z"
+    },
+    {
+      "sha": "c4b59dd",
+      "repo": "DayMark",
+      "message": "fix: 测试连接改用输入框里的凭据，不再验证已保存的旧密码",
+      "date": "2026-10-17T13:21:43Z"
+    },
+    {
+      "sha": "60be52d",
+      "repo": "DayMark",
+      "message": "fix: 401 提示只按长度判断应用密码，并统一其称谓",
+      "date": "2026-10-17T02:04:18Z"
+    },
+    {
+      "sha": "b119135",
+      "repo": "DayMark",
+      "message": "fix: 空明文写入不再抹掉应用密码，401 提示带可诊断信息",
+      "date": "2026-10-16T17:16:06Z"
+    }
+  ]
+}

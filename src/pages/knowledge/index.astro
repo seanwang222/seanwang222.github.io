@@ -1,0 +1,395 @@
+---
+import Base from '../../layouts/Base.astro';
+import NoteCard from '../../components/NoteCard.astro';
+import { getNotes, getTags, buildGraph, plainText, readingTime } from '../../lib/notes';
+
+const notes = await getNotes();
+const tags = getTags(notes);
+const graph = buildGraph(notes);
+const linkCount = graph.links.filter((link) => link.type === 'link').length;
+const orphans = notes.filter((note) => {
+  const inbound = notes.some(
+    (other) => other.id !== note.id && (other.body ?? '').includes(`[[${note.id}`)
+  );
+  const outbound = (note.body ?? '').includes('[[');
+  return !inbound && !outbound;
+});
+
+const yearSpan = `${notes.at(-1)?.data.date.getFullYear() ?? ''} — ${notes[0]?.data.date.getFullYear() ?? ''}`;
+---
+
+<Base
+  title="知识空间"
+  description={`${notes.length} 篇工程笔记与随想，按双向链接组织。`}
+>
+  <header class="page-head wrap">
+    <div class="eyebrow" data-reveal>Knowledge space</div>
+    <h1 class="page-title" data-reveal data-reveal-delay="60">知识空间</h1>
+    <p class="page-lead" data-reveal data-reveal-delay="100">
+      工程笔记与随想。每条笔记是一个文件，用 <code class="inline-code">[[双链]]</code> 互相指认，
+      反链与图谱在构建时自动生成——不依赖后台，也不依赖数据库。
+    </p>
+
+    <div class="head-stats mono" data-reveal data-reveal-delay="140">
+      <span><b>{notes.length}</b> 篇</span>
+      <span class="sep">·</span>
+      <span><b>{tags.length}</b> 个标签</span>
+      <span class="sep">·</span>
+      <span><b>{linkCount}</b> 条双链</span>
+      <span class="sep">·</span>
+      <span>{yearSpan}</span>
+    </div>
+  </header>
+
+  <section class="wrap">
+    <a class="graph-teaser" href="/graph/" data-reveal>
+      <div class="teaser-left">
+        <span class="teaser-label mono">Graph view</span>
+        <h2 class="teaser-title">看见笔记之间的结构</h2>
+        <p class="teaser-desc">
+          {graph.nodes.length} 个节点、{linkCount} 条双链构成一张可拖拽的地图。
+          {orphans.length > 0
+            ? `当前有 ${orphans.length} 个孤立节点，是待补的链接。`
+            : '当前没有孤立节点。'}
+        </p>
+      </div>
+      <span class="teaser-arrow" aria-hidden="true">→</span>
+    </a>
+  </section>
+
+  <section class="wrap toolbar-wrap">
+    <div class="toolbar">
+      <label class="search">
+        <span class="sr-only">搜索笔记</span>
+        <span class="search-icon" aria-hidden="true">⌕</span>
+        <input
+          type="search"
+          id="note-search"
+          placeholder="搜索标题、正文或标签…"
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <kbd class="mono">/</kbd>
+      </label>
+
+      <div class="filters" role="group" aria-label="按标签筛选">
+        <button class="chip is-active" type="button" data-tag="*">全部 <span class="n">{notes.length}</span></button>
+        {tags.map((tag) => (
+          <button class="chip" type="button" data-tag={tag.tag}>
+            {tag.tag} <span class="n">{tag.count}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+
+    <div class="list-meta mono">
+      <span data-count>{notes.length} 条</span>
+      <span class="faint" data-hint>按日期倒序</span>
+    </div>
+
+    <div class="note-list" data-note-list>
+      {notes.map((note, index) => (
+        <div
+          class="note-item"
+          data-note-item
+          data-title={note.data.title}
+          data-tags={note.data.tags.join('|')}
+          data-search={`${note.data.title} ${note.data.summary} ${note.data.tags.join(' ')} ${plainText(note.body ?? '').slice(0, 420)}`.toLowerCase()}
+        >
+          <NoteCard note={note} index={index} />
+        </div>
+      ))}
+    </div>
+
+    <div class="empty" data-empty hidden>
+      <p class="mono">没有匹配的笔记</p>
+      <p class="faint">换个关键词，或点「全部」清除筛选。</p>
+    </div>
+  </section>
+</Base>
+
+<script>
+  const input = document.querySelector<HTMLInputElement>('#note-search');
+  const items = [...document.querySelectorAll<HTMLElement>('[data-note-item]')];
+  const chips = [...document.querySelectorAll<HTMLButtonElement>('[data-tag]')];
+  const countEl = document.querySelector<HTMLElement>('[data-count]');
+  const hintEl = document.querySelector<HTMLElement>('[data-hint]');
+  const emptyEl = document.querySelector<HTMLElement>('[data-empty]');
+
+  let activeTag = '*';
+  let query = '';
+
+  function apply() {
+    const q = query.trim().toLowerCase();
+    let visible = 0;
+
+    for (const item of items) {
+      const tags = (item.dataset.tags ?? '').split('|');
+      const haystack = item.dataset.search ?? '';
+      const tagOk = activeTag === '*' || tags.includes(activeTag);
+      const qOk = q === '' || haystack.includes(q);
+      const show = tagOk && qOk;
+      item.hidden = !show;
+      if (show) visible += 1;
+    }
+
+    if (countEl) countEl.textContent = `${visible} 条`;
+    if (hintEl) {
+      hintEl.textContent =
+        activeTag === '*' && !q ? '按日期倒序' : [activeTag !== '*' ? `#${activeTag}` : '', q ? `“${query.trim()}”` : '']
+          .filter(Boolean)
+          .join(' · ');
+    }
+    if (emptyEl) emptyEl.hidden = visible !== 0;
+  }
+
+  input?.addEventListener('input', () => {
+    query = input.value;
+    apply();
+  });
+
+  for (const chip of chips) {
+    chip.addEventListener('click', () => {
+      activeTag = chip.dataset.tag ?? '*';
+      chips.forEach((item) => item.classList.toggle('is-active', item === chip));
+      apply();
+    });
+  }
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === '/' && document.activeElement !== input) {
+      event.preventDefault();
+      input?.focus();
+    }
+    if (event.key === 'Escape' && document.activeElement === input) {
+      input.value = '';
+      query = '';
+      apply();
+      input.blur();
+    }
+  });
+
+  // 支持从标签页跳转过来：/knowledge/?tag=数据安全
+  const initialTag = new URLSearchParams(window.location.search).get('tag');
+  if (initialTag) {
+    const match = chips.find((chip) => chip.dataset.tag === initialTag);
+    if (match) match.click();
+  }
+</script>
+
+<style>
+  .page-head {
+    padding-block: clamp(48px, 7vw, 88px) clamp(26px, 4vw, 40px);
+  }
+
+  .page-title {
+    margin-top: 18px;
+    font-size: var(--fs-h1);
+  }
+
+  .page-lead {
+    margin-top: 18px;
+    max-width: 64ch;
+    font-size: 0.98rem;
+    line-height: 1.9;
+    color: var(--paper-dim);
+    text-wrap: pretty;
+  }
+
+  .inline-code {
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    padding: 0.1em 0.36em;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.06);
+    color: #e7c48d;
+  }
+
+  .head-stats {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-top: 24px;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    color: var(--paper-faint);
+  }
+
+  .head-stats b {
+    color: var(--paper);
+    font-weight: 500;
+  }
+
+  .sep {
+    opacity: 0.4;
+  }
+
+  .graph-teaser {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 24px 28px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background:
+      radial-gradient(420px 160px at 82% 50%, rgba(125, 167, 154, 0.06), transparent 70%),
+      var(--ink-1);
+    transition: border-color 0.3s var(--ease), transform 0.3s var(--ease);
+  }
+
+  .graph-teaser:hover {
+    border-color: color-mix(in srgb, var(--jade) 34%, transparent);
+    transform: translateY(-1px);
+  }
+
+  .teaser-label {
+    font-size: 0.62rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--jade);
+    opacity: 0.8;
+  }
+
+  .teaser-title {
+    margin-top: 8px;
+    font-size: 1.06rem;
+  }
+
+  .teaser-desc {
+    margin-top: 7px;
+    font-size: 0.85rem;
+    line-height: 1.7;
+    color: var(--paper-faint);
+    max-width: 62ch;
+  }
+
+  .teaser-arrow {
+    font-size: 1.1rem;
+    color: var(--jade);
+    transition: transform 0.3s var(--ease);
+  }
+
+  .graph-teaser:hover .teaser-arrow {
+    transform: translateX(5px);
+  }
+
+  .toolbar-wrap {
+    margin-top: clamp(36px, 6vw, 56px);
+  }
+
+  .toolbar {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .search {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--ink-1);
+    transition: border-color 0.25s var(--ease);
+    max-width: 520px;
+  }
+
+  .search:focus-within {
+    border-color: var(--brass-line);
+  }
+
+  .search-icon {
+    color: var(--paper-faint);
+    font-size: 0.95rem;
+  }
+
+  .search input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    background: none;
+    color: var(--paper);
+    font-size: 0.92rem;
+    outline: none;
+  }
+
+  .search kbd {
+    font-size: 0.65rem;
+    padding: 1px 6px;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    color: var(--paper-faint);
+  }
+
+  .search input::-webkit-search-cancel-button {
+    filter: invert(0.6);
+  }
+
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+  }
+
+  .chip .n {
+    font-size: 0.6rem;
+    opacity: 0.6;
+  }
+
+  .list-meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 0 6px;
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    color: var(--paper-faint);
+  }
+
+  .note-list {
+    border-bottom: 1px solid var(--line-soft);
+  }
+
+  .note-item[hidden] {
+    display: none;
+  }
+
+  .empty {
+    padding: 60px 0;
+    text-align: center;
+  }
+
+  .empty p:first-child {
+    font-size: 0.74rem;
+    letter-spacing: 0.14em;
+    color: var(--paper-dim);
+  }
+
+  .empty p:last-child {
+    margin-top: 8px;
+    font-size: 0.86rem;
+  }
+
+  @media (max-width: 720px) {
+    .graph-teaser {
+      padding: 20px;
+    }
+    .filters {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      scrollbar-width: none;
+    }
+    .filters::-webkit-scrollbar {
+      display: none;
+    }
+    .chip {
+      flex: none;
+    }
+  }
+</style>

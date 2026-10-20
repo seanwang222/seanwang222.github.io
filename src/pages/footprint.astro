@@ -1,0 +1,721 @@
+---
+import Base from '../layouts/Base.astro';
+import github from '../data/github.json';
+import { site } from '../data/site';
+
+const dailyMap = new Map(github.daily.map((entry) => [entry.date, entry.count]));
+const anchorDay = github.daily.at(-1)?.date ?? new Date().toISOString().slice(0, 10);
+
+const series = Array.from({ length: 30 }, (_, index) => {
+  const date = new Date(`${anchorDay}T00:00:00Z`);
+  date.setUTCDate(date.getUTCDate() - (29 - index));
+  const key = date.toISOString().slice(0, 10);
+  return { date: key, count: dailyMap.get(key) ?? 0 };
+});
+
+const maxBar = Math.max(1, ...series.map((item) => item.count));
+const windowTotal = series.reduce((sum, item) => sum + item.count, 0);
+const windowActive = series.filter((item) => item.count > 0).length;
+
+const hourPeak = github.hourly.indexOf(Math.max(...github.hourly));
+const hourPeakCount = github.hourly[hourPeak];
+const maxHour = Math.max(1, ...github.hourly);
+const maxWeekday = Math.max(1, ...github.weekday);
+
+const weekdayLabels = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+
+const langColors: Record<string, string> = {
+  JavaScript: '#d6a756',
+  TypeScript: '#86a0c6',
+  CSS: '#7da79a',
+  HTML: '#c98b8b',
+  Shell: '#8f9a6e',
+  Python: '#b08bb5',
+};
+
+const fetched = new Date(github.fetchedAt);
+const fetchedLabel = new Intl.DateTimeFormat('zh-CN', {
+  timeZone: 'Asia/Shanghai',
+  month: '2-digit',
+  day: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+  hour12: false,
+}).format(fetched);
+
+const stats = [
+  { label: '公开提交', value: github.totals.commits, unit: '次', note: '来自所有公开仓库' },
+  { label: '活跃天数', value: github.totals.activeDays, unit: '天', note: '至少提交过一次的日期' },
+  { label: '最长连续', value: github.totals.longestStreak, unit: '天', note: `当前连续 ${github.totals.currentStreak} 天` },
+  { label: '跟踪仓库', value: github.totals.trackedRepos, unit: '个', note: '非 fork 且有内容' },
+];
+---
+
+<Base title="数据足迹" description="由 GitHub 公开提交记录算出的活跃节律、时段分布与语言构成。">
+  <header class="page-head wrap">
+    <div class="eyebrow" data-reveal>Footprint</div>
+    <h1 class="page-title" data-reveal data-reveal-delay="60">数据足迹</h1>
+    <p class="page-lead" data-reveal data-reveal-delay="100">
+      这一页的每个数字都是从提交记录算出来的，没有一条是手填的。
+      构建前执行一次 <code class="inline-code">npm run fetch:github</code>，产物存成静态 JSON。
+    </p>
+    <div class="head-stats mono" data-reveal data-reveal-delay="140">
+      <span>数据截至 <b>{anchorDay.replace(/-/g, '.')}</b></span>
+      <span class="sep">·</span>
+      <span>快照 {fetchedLabel}</span>
+      <span class="sep">·</span>
+      <span>@{github.user.login}</span>
+    </div>
+  </header>
+
+  <section class="wrap">
+    <div class="stat-grid" data-reveal>
+      {stats.map((stat) => (
+        <div class="stat">
+          <div class="stat-label mono">{stat.label}</div>
+          <div class="stat-value">
+            <span class="serif">{stat.value}</span>
+            <span class="stat-unit mono">{stat.unit}</span>
+          </div>
+          <p class="stat-note">{stat.note}</p>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <section class="wrap block" id="rhythm">
+    <div class="block-head" data-reveal>
+      <h2 class="block-title"><span class="idx mono">01</span>近 30 天节律</h2>
+      <span class="mono micro faint">
+        窗口内 {windowTotal} 次提交 · {windowActive} 个活跃日
+      </span>
+    </div>
+
+    <div class="rhythm" data-reveal>
+      <div class="rhythm-bars">
+        {series.map((item) => (
+          <div
+            class:list={['rbar', { active: item.count > 0, peak: item.count === maxBar }]}
+            title={`${item.date} · ${item.count} 次提交`}
+          >
+            <i style={`height:${item.count === 0 ? 3 : 8 + (item.count / maxBar) * 82}px`}></i>
+          </div>
+        ))}
+      </div>
+      <div class="rhythm-axis mono">
+        <span>{series[0].date.slice(5).replace('-', '.')}</span>
+        <span class="axis-mid">每天一根，高度 = 当日提交数</span>
+        <span>{series.at(-1)!.date.slice(5).replace('-', '.')}</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap block split" id="hours">
+    <div data-reveal>
+      <div class="block-head compact">
+        <h2 class="block-title"><span class="idx mono">02</span>一天里的分布</h2>
+        <span class="mono micro faint">峰值 {String(hourPeak).padStart(2, '0')}:00</span>
+      </div>
+
+      <div class="bars">
+        {github.hourly.map((count, hour) => (
+          <div class:list={['vbar', { peak: hour === hourPeak }]} title={`${hour}:00 · ${count} 次`}>
+            <i style={`height:${count === 0 ? 2 : 6 + (count / maxHour) * 96}px`}></i>
+            {(hour % 6 === 0 || hour === 23) && (
+              <span class="vbar-label mono">{String(hour).padStart(2, '0')}</span>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <p class="block-note">
+        峰值出现在 {String(hourPeak).padStart(2, '0')}:00，共 {hourPeakCount} 次。
+        提交时间按 Asia/Shanghai 换算，深夜与上午各有一段明显的活跃窗口。
+      </p>
+    </div>
+
+    <div data-reveal data-reveal-delay="80">
+      <div class="block-head compact">
+        <h2 class="block-title"><span class="idx mono">03</span>一周里的分布</h2>
+        <span class="mono micro faint">周二最安静</span>
+      </div>
+
+      <div class="bars week">
+        {github.weekday.map((count, index) => (
+          <div class:list={['vbar', { peak: count === maxWeekday }]} title={`${weekdayLabels[index]} · ${count} 次`}>
+            <i style={`height:${count === 0 ? 2 : 6 + (count / maxWeekday) * 96}px`}></i>
+            <span class="vbar-label mono">{weekdayLabels[index].slice(1)}</span>
+          </div>
+        ))}
+      </div>
+
+      <p class="block-note">
+        周末的提交并不比工作日少——这个项目基本是业余时间做的。
+      </p>
+    </div>
+  </section>
+
+  <section class="wrap block" id="languages">
+    <div class="block-head" data-reveal>
+      <h2 class="block-title"><span class="idx mono">04</span>语言构成</h2>
+      <span class="mono micro faint">按字节数统计</span>
+    </div>
+
+    <div class="lang-bar" data-reveal>
+      {github.languages.map((lang) => (
+        <span
+          class="lang-seg"
+          style={`width:${Math.max(lang.percent, 0.6)}%;background:${langColors[lang.name] ?? '#6d6a63'}`}
+          title={`${lang.name} · ${lang.percent}%`}
+        ></span>
+      ))}
+    </div>
+
+    <ul class="lang-legend" data-reveal>
+      {github.languages.map((lang) => (
+        <li>
+          <i style={`background:${langColors[lang.name] ?? '#6d6a63'}`}></i>
+          <span class="lang-name">{lang.name}</span>
+          <span class="lang-pct mono">{lang.percent}%</span>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <section class="wrap block" id="repos">
+    <div class="block-head" data-reveal>
+      <h2 class="block-title"><span class="idx mono">05</span>仓库</h2>
+      <a class="arrow-link" href={site.links.github} target="_blank" rel="noreferrer">
+        GitHub <span class="arw">↗</span>
+      </a>
+    </div>
+
+    <div class="repo-table" data-reveal>
+      <div class="repo-row repo-head mono">
+        <span>仓库</span>
+        <span class="num">提交</span>
+        <span>语言</span>
+        <span>最近提交</span>
+      </div>
+      {github.repos.map((repo) => (
+        <a class="repo-row" href={repo.url} target="_blank" rel="noreferrer">
+          <span class="repo-name">
+            <span class="name">{repo.name}</span>
+            <span class="repo-desc">{repo.description.slice(0, 60)}</span>
+          </span>
+          <span class="num mono">{repo.commits}</span>
+          <span class="mono faint">{repo.language}</span>
+          <span class="repo-last">
+            <span class="msg">{repo.lastMessage}</span>
+            <span class="mono time">{repo.lastCommitAt?.slice(0, 10).replace(/-/g, '.') ?? '—'}</span>
+          </span>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <section class="wrap block" id="commits">
+    <div class="block-head" data-reveal>
+      <h2 class="block-title"><span class="idx mono">06</span>最近的提交</h2>
+      <span class="mono micro faint">最多 8 条</span>
+    </div>
+
+    <ol class="commit-list" data-reveal>
+      {github.recent.map((commit) => (
+        <li>
+          <span class="sha mono">{commit.sha}</span>
+          <span class="repo mono">{commit.repo}</span>
+          <span class="msg">{commit.message}</span>
+          <span class="time mono">{commit.date.slice(5, 10).replace('-', '.')}</span>
+        </li>
+      ))}
+    </ol>
+
+    <p class="source-note mono">
+      数据源：GitHub REST API（/repos/:owner/:repo/commits, /languages）·
+      生成于 {github.fetchedAt.slice(0, 10)}
+    </p>
+  </section>
+</Base>
+
+<style>
+  .page-head {
+    padding-block: clamp(48px, 7vw, 88px) clamp(28px, 4vw, 40px);
+  }
+
+  .page-title {
+    margin-top: 18px;
+    font-size: var(--fs-h1);
+  }
+
+  .page-lead {
+    margin-top: 18px;
+    max-width: 64ch;
+    font-size: 0.98rem;
+    line-height: 1.9;
+    color: var(--paper-dim);
+    text-wrap: pretty;
+  }
+
+  .inline-code {
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    padding: 0.1em 0.36em;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.06);
+    color: #e7c48d;
+  }
+
+  .head-stats {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-top: 24px;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    color: var(--paper-faint);
+  }
+
+  .head-stats b {
+    color: var(--paper);
+    font-weight: 500;
+  }
+
+  .sep {
+    opacity: 0.4;
+  }
+
+  .micro {
+    font-size: 0.64rem;
+    letter-spacing: 0.08em;
+  }
+
+  /* 统计卡 */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1px;
+    background: var(--line-soft);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .stat {
+    padding: 22px 22px 18px;
+    background: var(--ink-0);
+    transition: background-color 0.3s var(--ease);
+  }
+
+  .stat:hover {
+    background: var(--ink-2);
+  }
+
+  .stat-label {
+    font-size: 0.64rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--paper-faint);
+  }
+
+  .stat-value {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-top: 12px;
+  }
+
+  .stat-value .serif {
+    font-size: 2.35rem;
+    line-height: 1;
+    color: var(--paper-strong);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+  }
+
+  .stat-unit {
+    font-size: 0.66rem;
+    color: var(--paper-faint);
+  }
+
+  .stat-note {
+    margin-top: 10px;
+    font-size: 0.74rem;
+    color: var(--paper-faint);
+    line-height: 1.6;
+  }
+
+  /* 区块 */
+  .block {
+    margin-top: clamp(46px, 7vw, 76px);
+  }
+
+  .block-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 26px;
+  }
+
+  .block-head.compact {
+    margin-bottom: 22px;
+  }
+
+  .block-title {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    font-size: 1.02rem;
+  }
+
+  .block-title .idx {
+    font-size: 0.62rem;
+    letter-spacing: 0.14em;
+    color: var(--brass);
+  }
+
+  .block-note {
+    margin-top: 18px;
+    font-size: 0.8rem;
+    line-height: 1.75;
+    color: var(--paper-faint);
+    max-width: 52ch;
+  }
+
+  /* 节律条 */
+  .rhythm {
+    padding: 20px 0 0;
+  }
+
+  .rhythm-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 5px;
+    height: 96px;
+    padding-bottom: 1px;
+    border-bottom: 1px solid var(--line-soft);
+  }
+
+  .rbar {
+    flex: 1;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+  }
+
+  .rbar i {
+    display: block;
+    width: 100%;
+    max-width: 22px;
+    border-radius: 1px 1px 0 0;
+    background: rgba(255, 255, 255, 0.07);
+    transition: background-color 0.25s var(--ease), transform 0.25s var(--ease);
+  }
+
+  .rbar.active i {
+    background: rgba(214, 167, 86, 0.42);
+  }
+
+  .rbar.peak i {
+    background: var(--brass);
+  }
+
+  .rbar:hover i {
+    background: var(--brass);
+    transform: scaleY(1.04);
+    transform-origin: bottom;
+  }
+
+  .rhythm-axis {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 10px;
+    font-size: 0.62rem;
+    letter-spacing: 0.06em;
+    color: var(--paper-faint);
+  }
+
+  .axis-mid {
+    opacity: 0.55;
+  }
+
+  /* 竖条图 */
+  .split {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(28px, 5vw, 64px);
+  }
+
+  .bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    height: 130px;
+    border-bottom: 1px solid var(--line-soft);
+    padding-bottom: 22px;
+    position: relative;
+  }
+
+  .vbar {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    height: 100%;
+    gap: 0;
+  }
+
+  .vbar i {
+    display: block;
+    width: 100%;
+    max-width: 16px;
+    border-radius: 1px 1px 0 0;
+    background: rgba(214, 167, 86, 0.24);
+    transition: background-color 0.25s var(--ease);
+  }
+
+  .vbar.peak i {
+    background: rgba(214, 167, 86, 0.85);
+  }
+
+  .vbar:hover i {
+    background: var(--brass);
+  }
+
+  .vbar-label {
+    position: absolute;
+    bottom: 0;
+    font-size: 0.56rem;
+    letter-spacing: 0.02em;
+    color: var(--paper-faint);
+    transform: translateX(-50%);
+    left: 50%;
+  }
+
+  .bars.week .vbar-label {
+    position: static;
+    transform: none;
+    margin-top: 6px;
+  }
+
+  .bars.week {
+    padding-bottom: 0;
+  }
+
+  .bars.week::after {
+    content: "";
+  }
+
+  /* 语言条 */
+  .lang-bar {
+    display: flex;
+    height: 10px;
+    border-radius: 99px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.05);
+    gap: 2px;
+  }
+
+  .lang-seg {
+    display: block;
+    height: 100%;
+    transition: filter 0.25s var(--ease);
+  }
+
+  .lang-seg:hover {
+    filter: brightness(1.25);
+  }
+
+  .lang-legend {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 28px;
+    margin-top: 20px;
+  }
+
+  .lang-legend li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    color: var(--paper-dim);
+  }
+
+  .lang-legend i {
+    width: 7px;
+    height: 7px;
+    border-radius: 2px;
+  }
+
+  .lang-name {
+    letter-spacing: 0.02em;
+  }
+
+  .lang-pct {
+    font-size: 0.68rem;
+    color: var(--paper-faint);
+  }
+
+  /* 仓库表 */
+  .repo-table {
+    border-top: 1px solid var(--line-soft);
+  }
+
+  .repo-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) 60px 96px minmax(0, 1.2fr);
+    gap: 20px;
+    align-items: center;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--line-soft);
+    transition: background-color 0.25s var(--ease);
+  }
+
+  a.repo-row:hover {
+    background: rgba(255, 255, 255, 0.016);
+  }
+
+  .repo-head {
+    font-size: 0.62rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--paper-faint);
+    padding-block: 10px;
+  }
+
+  .repo-name {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+  }
+
+  .repo-name .name {
+    font-size: 0.92rem;
+    color: var(--paper-strong);
+  }
+
+  a.repo-row:hover .name {
+    color: var(--brass);
+  }
+
+  .repo-desc {
+    font-size: 0.76rem;
+    color: var(--paper-faint);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .num {
+    font-size: 0.82rem;
+    color: var(--paper-dim);
+    text-align: right;
+  }
+
+  .repo-head .num {
+    text-align: right;
+  }
+
+  .repo-last {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+  }
+
+  .repo-last .msg {
+    font-size: 0.78rem;
+    color: var(--paper-dim);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .repo-last .time {
+    font-size: 0.64rem;
+    color: var(--paper-faint);
+  }
+
+  /* 提交列表 */
+  .commit-list {
+    list-style: none;
+  }
+
+  .commit-list li {
+    display: grid;
+    grid-template-columns: 62px 120px minmax(0, 1fr) 52px;
+    gap: 16px;
+    align-items: baseline;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line-soft);
+  }
+
+  .sha {
+    font-size: 0.68rem;
+    color: var(--brass);
+    opacity: 0.75;
+  }
+
+  .commit-list .repo {
+    font-size: 0.68rem;
+    color: var(--paper-faint);
+  }
+
+  .commit-list .msg {
+    font-size: 0.85rem;
+    color: var(--paper-dim);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .commit-list .time {
+    font-size: 0.66rem;
+    color: var(--paper-faint);
+    text-align: right;
+  }
+
+  .source-note {
+    margin-top: 26px;
+    font-size: 0.62rem;
+    letter-spacing: 0.04em;
+    color: var(--paper-faint);
+    opacity: 0.75;
+    line-height: 1.8;
+  }
+
+  @media (max-width: 900px) {
+    .stat-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .split {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .repo-row {
+      grid-template-columns: minmax(0, 1fr) 52px;
+      gap: 10px;
+    }
+    .repo-head {
+      display: none;
+    }
+    .repo-row > :nth-child(3),
+    .repo-row > :nth-child(4) {
+      grid-column: 1 / -1;
+    }
+    .commit-list li {
+      grid-template-columns: 56px minmax(0, 1fr);
+    }
+    .commit-list .repo,
+    .commit-list .time {
+      display: none;
+    }
+  }
+</style>

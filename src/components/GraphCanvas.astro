@@ -1,0 +1,607 @@
+---
+interface GraphNode {
+  id: string;
+  label: string;
+  type: 'note' | 'tag';
+  href?: string;
+  degree: number;
+  date?: string;
+  kind?: string;
+}
+interface GraphLink {
+  source: string;
+  target: string;
+  type: 'link' | 'tag';
+}
+
+interface Props {
+  nodes: GraphNode[];
+  links: GraphLink[];
+  height?: number;
+}
+
+const { nodes, links, height = 620 } = Astro.props;
+const payload = JSON.stringify({ nodes, links });
+---
+
+<div class="graph-shell" data-graph style={`--graph-h:${height}px`}>
+  <canvas class="graph-canvas" aria-label="知识图谱，节点为笔记与标签，可拖拽与点击"></canvas>
+
+  <div class="legend mono">
+    <span class="legend-item"><i class="dot note"></i>笔记</span>
+    <span class="legend-item"><i class="dot tag"></i>标签</span>
+    <span class="legend-item"><i class="line solid"></i>双向链接</span>
+    <span class="legend-item"><i class="line faint"></i>归档</span>
+  </div>
+
+  <div class="graph-hint mono">拖拽节点 · 点击进入</div>
+
+  <button class="reset mono" type="button" data-reset>重新布局</button>
+
+  <script type="application/json" data-graph-data set:html={payload} />
+</div>
+
+<script>
+  interface RawNode {
+    id: string;
+    label: string;
+    type: 'note' | 'tag';
+    href?: string;
+    degree: number;
+    date?: string;
+    kind?: string;
+  }
+
+  interface Node extends RawNode {
+    x: number;
+    y: number;
+    vx: number;
+    vy: number;
+    r: number;
+    count?: number;
+  }
+
+  const shell = document.querySelector<HTMLElement>('[data-graph]');
+  const canvas = shell?.querySelector('canvas');
+  const dataEl = shell?.querySelector<HTMLScriptElement>('[data-graph-data]');
+
+  if (shell && canvas && dataEl) {
+    const raw = JSON.parse(dataEl.textContent || '{"nodes":[],"links":[]}') as {
+      nodes: RawNode[];
+      links: { source: string; target: string; type: 'link' | 'tag' }[];
+    };
+
+    const ctx = canvas.getContext('2d')!;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const FONT = '"PingFang SC", "Microsoft YaHei", system-ui, sans-serif';
+
+    let W = 0;
+    let H = 0;
+    let temperature = 0;
+    let running = true;
+    let hovered: Node | null = null;
+    let dragging: Node | null = null;
+    let dragStart = { x: 0, y: 0 };
+    let dragMoved = 0;
+    let neighbors = new Set<string>();
+
+    const byId = new Map<string, Node>();
+    const nodes: Node[] = raw.nodes.map((item, index, all) => {
+      const radius =
+        item.type === 'tag' ? 3.4 + Math.min(item.degree, 7) * 0.9 : 5 + Math.min(item.degree, 9) * 1.5;
+      const angle = (index / Math.max(all.length, 1)) * Math.PI * 2;
+      const node: Node = {
+        ...item,
+        x: Math.cos(angle) * 0.32,
+        y: Math.sin(angle) * 0.32,
+        vx: 0,
+        vy: 0,
+        r: radius,
+      };
+      byId.set(node.id, node);
+      return node;
+    });
+
+    const links = raw.links
+      .map((link) => ({ ...link, s: byId.get(link.source), t: byId.get(link.target) }))
+      .filter((link): link is typeof link & { s: Node; t: Node } => Boolean(link.s && link.t));
+
+    const adjacency = new Map<string, Set<string>>();
+    for (const link of links) {
+      if (!adjacency.has(link.source)) adjacency.set(link.source, new Set());
+      if (!adjacency.has(link.target)) adjacency.set(link.target, new Set());
+      adjacency.get(link.source)!.add(link.target);
+      adjacency.get(link.target)!.add(link.source);
+    }
+
+    function layoutSize() {
+      const rect = shell!.getBoundingClientRect();
+      W = rect.width;
+      H = rect.height;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas!.width = Math.round(W * dpr);
+      canvas!.height = Math.round(H * dpr);
+      canvas!.style.width = `${W}px`;
+      canvas!.style.height = `${H}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    function seed() {
+      const cx = W / 2;
+      const cy = H / 2;
+      const ring = Math.min(W, H) * 0.3;
+      const golden = Math.PI * (3 - Math.sqrt(5));
+      nodes.forEach((node, index) => {
+        const angle = index * golden;
+        const radius = ring * (0.52 + (index % 5) * 0.11);
+        node.x = cx + Math.cos(angle) * radius;
+        node.y = cy + Math.sin(angle) * radius * 0.88;
+        node.vx = 0;
+        node.vy = 0;
+      });
+      temperature = Math.max(W, H) * 0.16;
+    }
+
+    /**
+     * Fruchterman-Reingold：斥力 k²/d，引力 d²/k，位移受温度限幅。
+     * k 由画布面积与节点数算出，所以节点会自然铺满视口，而不是缩成一团。
+     */
+    function simulate() {
+      const count = nodes.length;
+      if (count === 0) {
+        running = false;
+        return;
+      }
+
+      const cx = W / 2;
+      const cy = H / 2;
+      const k = Math.sqrt((W * H) / count) * 0.8;
+      const disp = new Float64Array(count * 2);
+      const indexOf = new Map(nodes.map((node, index) => [node.id, index]));
+
+      for (let i = 0; i < count; i += 1) {
+        for (let j = i + 1; j < count; j += 1) {
+          const a = nodes[i];
+          const b = nodes[j];
+          let dx = a.x - b.x;
+          let dy = a.y - b.y;
+          let dist = Math.hypot(dx, dy);
+          if (dist < 0.01) {
+            dx = Math.random() - 0.5;
+            dy = Math.random() - 0.5;
+            dist = 0.01;
+          }
+          const force = (k * k) / dist;
+          const ux = dx / dist;
+          const uy = dy / dist;
+          disp[i * 2] += ux * force;
+          disp[i * 2 + 1] += uy * force;
+          disp[j * 2] -= ux * force;
+          disp[j * 2 + 1] -= uy * force;
+        }
+      }
+
+      for (const link of links) {
+        const i = indexOf.get(link.source);
+        const j = indexOf.get(link.target);
+        if (i === undefined || j === undefined) continue;
+        const a = nodes[i];
+        const b = nodes[j];
+        const dx = a.x - b.x;
+        const dy = a.y - b.y;
+        const dist = Math.hypot(dx, dy) || 0.01;
+        const scale = link.type === 'tag' ? 0.36 : 1;
+        const ideal = link.type === 'tag' ? 0.62 : 1.02;
+        const force = ((dist * dist) / k / ideal) * scale;
+        const ux = dx / dist;
+        const uy = dy / dist;
+        disp[i * 2] -= ux * force;
+        disp[i * 2 + 1] -= uy * force;
+        disp[j * 2] += ux * force;
+        disp[j * 2 + 1] += uy * force;
+      }
+
+      for (let i = 0; i < count; i += 1) {
+        disp[i * 2] += (cx - nodes[i].x) * 0.07;
+        disp[i * 2 + 1] += (cy - nodes[i].y) * 0.07;
+      }
+
+      for (let i = 0; i < count; i += 1) {
+        const node = nodes[i];
+        if (node === dragging) continue;
+
+        const dx = disp[i * 2];
+        const dy = disp[i * 2 + 1];
+        const length = Math.hypot(dx, dy);
+        if (length > 0.001) {
+          const step = Math.min(length, temperature);
+          node.x += (dx / length) * step;
+          node.y += (dy / length) * step;
+        }
+
+        const pad = 58;
+        node.x = Math.max(pad, Math.min(W - pad, node.x));
+        node.y = Math.max(pad + 14, Math.min(H - pad, node.y));
+      }
+
+      temperature *= 0.972;
+      if (temperature < 0.45) {
+        temperature = 0.45;
+        running = false;
+      }
+    }
+
+    function truncate(text: string, max: number) {
+      return text.length > max ? `${text.slice(0, max)}…` : text;
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+      const dim = hovered !== null;
+
+      for (const link of links) {
+        const active = hovered
+          ? link.source === hovered.id || link.target === hovered.id
+          : true;
+        if (link.type === 'tag') {
+          ctx.strokeStyle = active ? 'rgba(125,167,154,0.22)' : 'rgba(255,255,255,0.035)';
+          ctx.lineWidth = 1;
+        } else {
+          ctx.strokeStyle = active ? 'rgba(214,167,86,0.42)' : 'rgba(214,167,86,0.09)';
+          ctx.lineWidth = active && dim ? 1.4 : 1;
+        }
+        ctx.beginPath();
+        ctx.moveTo(link.s.x, link.s.y);
+        ctx.lineTo(link.t.x, link.t.y);
+        ctx.stroke();
+      }
+
+      for (const node of nodes) {
+        const isNeighbor = neighbors.has(node.id);
+        const isHot = hovered === node;
+        const opacity = !dim ? 1 : isHot || isNeighbor ? 1 : 0.22;
+
+        if (node.type === 'tag') {
+          ctx.fillStyle = `rgba(125,167,154,${0.85 * opacity})`;
+        } else {
+          ctx.fillStyle = isHot
+            ? `rgba(244,241,234,${opacity})`
+            : `rgba(214,167,86,${0.92 * opacity})`;
+        }
+
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, isHot ? node.r + 2.5 : node.r, 0, Math.PI * 2);
+        ctx.fill();
+
+        if (node.type === 'note') {
+          ctx.strokeStyle = `rgba(8,9,10,${0.9 * opacity})`;
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+        }
+
+        if (isHot) {
+          ctx.beginPath();
+          ctx.arc(node.x, node.y, node.r + 8, 0, Math.PI * 2);
+          ctx.strokeStyle = 'rgba(214,167,86,0.35)';
+          ctx.lineWidth = 1;
+          ctx.stroke();
+        }
+      }
+
+      // 标签最后画，保证文字压在节点之上；先排优先级，再避让已占位置
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      const boxes: Array<{ x: number; y: number; w: number; h: number }> = [];
+      const rank = (node: Node) =>
+        hovered === node ? 3 : neighbors.has(node.id) ? 2 : node.type === 'note' ? 1 : 0;
+      const ordered = [...nodes].sort((a, b) => rank(b) - rank(a) || b.degree - a.degree);
+
+      ordered.forEach((node, order) => {
+        const isNeighbor = neighbors.has(node.id);
+        const isHot = hovered === node;
+        const isSmall = node.type === 'tag';
+        if (isSmall && !isHot && !isNeighbor && node.degree < 2) return;
+
+        const opacity = !dim ? 1 : isHot || isNeighbor ? 1 : 0.16;
+        const label = truncate(isSmall ? `#${node.label}` : node.label, W < 620 ? 9 : 15);
+        ctx.font = isSmall ? `400 10.5px ${FONT}` : `500 11.5px ${FONT}`;
+
+        const width = ctx.measureText(label).width;
+        // 靠近左右边缘的标签向内收，保证文字完整落在画布内
+        const drawX = Math.min(Math.max(node.x, width / 2 + 6), W - width / 2 - 6);
+        const stepBelow = node.r + 13;
+        const stepAbove = node.r + 11;
+        // 贴着画布下沿的节点把标签翻到上方，避免文字被裁掉
+        const preferAbove = node.y > H - 46 || order % 3 === 2;
+        // 依次尝试：近端 / 另一端 / 更远的近端 / 更远的另一端，全都撞上就跳过
+        const candidates = preferAbove
+          ? [node.y - stepAbove, node.y + stepBelow, node.y - stepAbove - 15, node.y + stepBelow + 15]
+          : [node.y + stepBelow, node.y - stepAbove, node.y + stepBelow + 15, node.y - stepAbove - 15];
+
+        const overlaps = (box: { x: number; y: number; w: number; h: number }) => {
+          const hitLabel = boxes.some(
+            (other) =>
+              box.x < other.x + other.w &&
+              box.x + box.w > other.x &&
+              box.y < other.y + other.h &&
+              box.y + box.h > other.y
+          );
+          if (hitLabel) return true;
+          return nodes.some((other) => {
+            if (other === node) return false;
+            const r = other.r + 3;
+            return (
+              box.x < other.x + r &&
+              box.x + box.w > other.x - r &&
+              box.y < other.y + r &&
+              box.y + box.h > other.y - r
+            );
+          });
+        };
+
+        let y = candidates[0];
+        let box = { x: drawX - width / 2 - 4, y: y - 7, w: width + 8, h: 14 };
+        for (const candidate of candidates) {
+          const probe = { x: drawX - width / 2 - 4, y: candidate - 7, w: width + 8, h: 14 };
+          if (!overlaps(probe)) {
+            y = candidate;
+            box = probe;
+            break;
+          }
+        }
+        if (overlaps(box) && !isHot && !isNeighbor) return;
+
+        boxes.push(box);
+        ctx.shadowColor = 'rgba(6,7,8,0.95)';
+        ctx.shadowBlur = 6;
+        ctx.fillStyle = isSmall
+          ? `rgba(125,167,154,${0.85 * opacity})`
+          : `rgba(226,222,214,${0.86 * opacity})`;
+        ctx.fillText(label, drawX, y);
+        ctx.shadowBlur = 0;
+      });
+    }
+
+    function frame() {
+      if (running) {
+        simulate();
+        draw();
+        requestAnimationFrame(frame);
+      }
+    }
+
+    function kick() {
+      if (!running) {
+        running = true;
+        requestAnimationFrame(frame);
+      }
+    }
+
+    function warm() {
+      temperature = Math.max(temperature, W * 0.022);
+      kick();
+    }
+
+    /**
+     * 减动效模式：一次把力导向算到收敛，只画一帧。
+     * 画完把 running 归位，否则 resize 后 kick() 不会重启绘制，画布会停在空白。
+     */
+    function settle() {
+      for (let i = 0; i < 400 && temperature > 0.45; i += 1) simulate();
+      running = false;
+      draw();
+    }
+
+    function hitTest(px: number, py: number): Node | null {
+      let best: Node | null = null;
+      let bestDist = Infinity;
+      for (const node of nodes) {
+        const dist = Math.hypot(node.x - px, node.y - py);
+        const threshold = node.r + 9;
+        if (dist < threshold && dist < bestDist) {
+          best = node;
+          bestDist = dist;
+        }
+      }
+      return best;
+    }
+
+    function updateHover(node: Node | null) {
+      if (hovered === node) return;
+      hovered = node;
+      neighbors = node ? adjacency.get(node.id) ?? new Set() : new Set();
+      shell!.classList.toggle('is-hovering', Boolean(node));
+      canvas!.style.cursor = node ? (node.href ? 'pointer' : 'grab') : 'default';
+      draw();
+    }
+
+    canvas.addEventListener('pointerdown', (event) => {
+      const rect = canvas.getBoundingClientRect();
+      const px = event.clientX - rect.left;
+      const py = event.clientY - rect.top;
+      const node = hitTest(px, py);
+      if (!node) return;
+      dragging = node;
+      dragStart = { x: px, y: py };
+      dragMoved = 0;
+      canvas.setPointerCapture(event.pointerId);
+      canvas.style.cursor = 'grabbing';
+      warm();
+    });
+
+    canvas.addEventListener('pointermove', (event) => {
+      const rect = canvas.getBoundingClientRect();
+      const px = event.clientX - rect.left;
+      const py = event.clientY - rect.top;
+
+      if (dragging) {
+        dragMoved += Math.hypot(px - dragStart.x, py - dragStart.y);
+        dragStart = { x: px, y: py };
+        dragging.x = px;
+        dragging.y = py;
+        warm();
+        draw();
+        return;
+      }
+
+      updateHover(hitTest(px, py));
+    });
+
+    const release = (event: PointerEvent) => {
+      if (!dragging) return;
+      const node = dragging;
+      dragging = null;
+      canvas.style.cursor = node.href ? 'pointer' : 'default';
+      if (canvas.hasPointerCapture(event.pointerId)) {
+        canvas.releasePointerCapture(event.pointerId);
+      }
+      if (dragMoved < 5 && node.href) {
+        window.location.href = node.href;
+      }
+    };
+
+    canvas.addEventListener('pointerup', release);
+    canvas.addEventListener('pointercancel', () => {
+      dragging = null;
+    });
+    canvas.addEventListener('pointerleave', () => {
+      if (!dragging) updateHover(null);
+    });
+
+    shell.querySelector('[data-reset]')?.addEventListener('click', () => {
+      seed();
+      kick();
+    });
+
+    layoutSize();
+    seed();
+    if (reduceMotion) {
+      settle();
+    } else {
+      running = true;
+      requestAnimationFrame(frame);
+    }
+
+    let resizeTimer: number | undefined;
+    new ResizeObserver(() => {
+      window.clearTimeout(resizeTimer);
+      resizeTimer = window.setTimeout(() => {
+        layoutSize();
+        seed();
+        // layoutSize 重设 canvas.width 会清空画布，这里必须重绘
+        if (reduceMotion) settle();
+        else kick();
+      }, 140);
+    }).observe(shell);
+  }
+</script>
+
+<style>
+  .graph-shell {
+    position: relative;
+    height: var(--graph-h);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background:
+      radial-gradient(600px 420px at 50% 40%, rgba(214, 167, 86, 0.045), transparent 70%),
+      var(--ink-1);
+    overflow: hidden;
+  }
+
+  .graph-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    touch-action: none;
+  }
+
+  .legend {
+    position: absolute;
+    left: 18px;
+    top: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    font-size: 0.63rem;
+    letter-spacing: 0.08em;
+    color: var(--paper-faint);
+    pointer-events: none;
+  }
+
+  .legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+  }
+
+  .dot.note {
+    background: var(--brass);
+  }
+
+  .dot.tag {
+    background: var(--jade);
+  }
+
+  .line {
+    width: 16px;
+    height: 1px;
+  }
+
+  .line.solid {
+    background: rgba(214, 167, 86, 0.6);
+  }
+
+  .line.faint {
+    background: rgba(255, 255, 255, 0.16);
+  }
+
+  .graph-hint {
+    position: absolute;
+    right: 18px;
+    bottom: 16px;
+    font-size: 0.63rem;
+    letter-spacing: 0.08em;
+    color: var(--paper-faint);
+    pointer-events: none;
+    opacity: 0.75;
+  }
+
+  .reset {
+    position: absolute;
+    left: 18px;
+    bottom: 14px;
+    padding: 5px 11px;
+    border: 1px solid var(--line);
+    border-radius: 99px;
+    font-size: 0.63rem;
+    letter-spacing: 0.1em;
+    color: var(--paper-dim);
+    background: rgba(8, 9, 10, 0.6);
+    transition: color 0.25s var(--ease), border-color 0.25s var(--ease);
+  }
+
+  .reset:hover {
+    color: var(--brass);
+    border-color: var(--brass-line);
+  }
+
+  @media (max-width: 640px) {
+    .graph-shell {
+      height: calc(var(--graph-h) * 0.78);
+    }
+    .legend {
+      gap: 10px;
+      font-size: 0.58rem;
+    }
+    .graph-hint {
+      display: none;
+    }
+  }
+</style>

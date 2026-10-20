@@ -1,0 +1,587 @@
+---
+import Base from '../layouts/Base.astro';
+import NoteCard from '../components/NoteCard.astro';
+import { site } from '../data/site';
+import { timeline, kindMeta } from '../data/timeline';
+import { getNotes, buildGraph } from '../lib/notes';
+import github from '../data/github.json';
+
+const notes = await getNotes();
+const featured = notes.filter((note) => note.data.featured).slice(0, 3);
+const graph = buildGraph(notes);
+const linkCount = graph.links.filter((link) => link.type === 'link').length;
+const latestNote = notes[0];
+const recentEvents = [...timeline]
+  .sort((a, b) => (a.date < b.date ? 1 : -1))
+  .slice(0, 4);
+
+const entries = [
+  {
+    href: '/knowledge/',
+    title: '知识空间',
+    desc: '工程笔记与随想，按双向链接组织，不从分类开始。',
+    meta: `${notes.length} 篇`,
+    idx: '01',
+  },
+  {
+    href: '/graph/',
+    title: '知识图谱',
+    desc: '把笔记之间的引用画出来，孤立节点就是待补的链接。',
+    meta: `${graph.nodes.length} 节点 / ${linkCount} 链接`,
+    idx: '02',
+  },
+  {
+    href: '/timeline/',
+    title: '时间线',
+    desc: '按日期排下来的记录：里程碑、功能、修复与写作。',
+    meta: `${timeline.length} 条`,
+    idx: '03',
+  },
+  {
+    href: '/footprint/',
+    title: '数据足迹',
+    desc: '提交节律、活跃时段与语言构成，全部由 GitHub 数据算出。',
+    meta: `${github.totals.commits} 次提交`,
+    idx: '04',
+  },
+];
+---
+
+<Base description={site.intro}>
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div class="hero-main">
+        <div class="eyebrow" data-reveal>Personal knowledge space · 2019 — 2026</div>
+
+        <h1 class="hero-title" data-reveal data-reveal-delay="60">
+          {site.tagline}
+        </h1>
+
+        <p class="hero-intro" data-reveal data-reveal-delay="120">{site.intro}</p>
+
+        <div class="hero-actions" data-reveal data-reveal-delay="180">
+          <a class="action-primary" href="/knowledge/">
+            进入知识空间
+            <span aria-hidden="true">→</span>
+          </a>
+          <a class="action-ghost" href={site.links.github} target="_blank" rel="noreferrer">
+            GitHub ↗
+          </a>
+        </div>
+
+        <p class="hero-sign mono" data-reveal data-reveal-delay="220">
+          {site.name} · {site.role} · {site.city}
+        </p>
+      </div>
+
+      <aside class="file-card" data-reveal data-reveal-delay="140" aria-label="站点概览">
+        <div class="file-head mono">
+          <span>INDEX CARD</span>
+          <span class="file-no">NO. 001</span>
+        </div>
+        <dl class="file-rows">
+          <div class="file-row">
+            <dt class="mono">笔记</dt>
+            <dd class="serif num">{String(notes.length).padStart(2, '0')}</dd>
+          </div>
+          <div class="file-row">
+            <dt class="mono">提交</dt>
+            <dd class="serif num">{github.totals.commits}</dd>
+          </div>
+          <div class="file-row">
+            <dt class="mono">活跃日</dt>
+            <dd class="serif num">{github.totals.activeDays}</dd>
+          </div>
+          <div class="file-row">
+            <dt class="mono">最近更新</dt>
+            <dd class="mono sm">{latestNote.data.date.toISOString().slice(0, 10).replace(/-/g, '.')}</dd>
+          </div>
+          <div class="file-row">
+            <dt class="mono">合肥时间</dt>
+            <dd class="mono sm" data-clock>—</dd>
+          </div>
+        </dl>
+        <div class="file-foot mono">
+          <span class="pulse" aria-hidden="true"></span>
+          <span>last commit · {github.recent[0]?.sha ?? '—'}</span>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="section wrap">
+    <div class="section-head" data-reveal>
+      <h2 class="section-title"><span class="idx mono">01</span>精选笔记</h2>
+      <a class="arrow-link" href="/knowledge/">全部 {notes.length} 篇 <span class="arw">→</span></a>
+    </div>
+
+    <div class="note-list">
+      {featured.map((note, index) => (
+        <NoteCard note={note} index={index} />
+      ))}
+    </div>
+  </section>
+
+  <section class="section wrap">
+    <div class="section-head" data-reveal>
+      <h2 class="section-title"><span class="idx mono">02</span>四个入口</h2>
+      <span class="faint mono micro">按需要去到的地方</span>
+    </div>
+
+    <div class="entry-grid">
+      {entries.map((entry) => (
+        <a class="entry" href={entry.href} data-reveal>
+          <span class="entry-idx mono">{entry.idx}</span>
+          <h3 class="entry-title">{entry.title}</h3>
+          <p class="entry-desc">{entry.desc}</p>
+          <div class="entry-foot">
+            <span class="mono micro faint">{entry.meta}</span>
+            <span class="entry-arrow" aria-hidden="true">↗</span>
+          </div>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <section class="section wrap">
+    <div class="section-head" data-reveal>
+      <h2 class="section-title"><span class="idx mono">03</span>最近记录</h2>
+      <a class="arrow-link" href="/timeline/">完整时间线 <span class="arw">→</span></a>
+    </div>
+
+    <ul class="recent-list">
+      {recentEvents.map((event) => (
+        <li class="recent-item" data-reveal>
+          <time class="mono" datetime={event.date}>{event.date.replace(/-/g, '.')}</time>
+          <span class="kind" style={`--k:${kindMeta[event.kind].color}`}>{kindMeta[event.kind].label}</span>
+          <div class="recent-body">
+            <span class="recent-title">{event.title}</span>
+            <p class="recent-desc">{event.desc}</p>
+          </div>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <section class="wrap closing">
+    <div class="closing-inner" data-reveal>
+      <span class="quote-mark serif" aria-hidden="true">”</span>
+      <p class="closing-text">
+        不写下来的判断，等于没有判断。<br />
+        所以这里存的不是结论，是得出结论的过程。
+      </p>
+      <a class="arrow-link" href="/knowledge/knowledge-garden/">读《知识花园需要链接》 <span class="arw">→</span></a>
+    </div>
+  </section>
+</Base>
+
+<script>
+  const clock = document.querySelector('[data-clock]');
+  if (clock) {
+    const tick = () => {
+      clock.textContent = new Intl.DateTimeFormat('zh-CN', {
+        timeZone: 'Asia/Shanghai',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      }).format(new Date());
+    };
+    tick();
+    window.setInterval(tick, 20_000);
+  }
+</script>
+
+<style>
+  .micro {
+    font-size: 0.66rem;
+    letter-spacing: 0.1em;
+  }
+
+  .hero {
+    padding-block: clamp(54px, 9vw, 116px) clamp(28px, 5vw, 52px);
+  }
+
+  .hero-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.85fr);
+    gap: clamp(32px, 5vw, 72px);
+    align-items: start;
+  }
+
+  .hero-title {
+    margin-top: 26px;
+    font-size: clamp(2.35rem, 5.2vw, 3.85rem);
+    line-height: 1.36;
+    letter-spacing: -0.022em;
+    font-weight: 600;
+    max-width: 20ch;
+  }
+
+  .hero-intro {
+    margin-top: 26px;
+    max-width: 52ch;
+    font-size: 1.02rem;
+    line-height: 1.95;
+    color: var(--paper-dim);
+    text-wrap: pretty;
+  }
+
+  .hero-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 34px;
+    flex-wrap: wrap;
+  }
+
+  .action-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 20px;
+    border-radius: 6px;
+    background: var(--brass);
+    color: #14100a;
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    transition: transform 0.3s var(--ease), box-shadow 0.3s var(--ease),
+      background-color 0.3s var(--ease);
+  }
+
+  .action-primary span {
+    transition: transform 0.3s var(--ease);
+  }
+
+  .action-primary:hover {
+    background: #e2b566;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 26px -14px rgba(214, 167, 86, 0.8);
+  }
+
+  .action-primary:hover span {
+    transform: translateX(3px);
+  }
+
+  .action-ghost {
+    display: inline-flex;
+    align-items: center;
+    padding: 10px 16px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    font-size: 0.86rem;
+    color: var(--paper-dim);
+    transition: color 0.25s var(--ease), border-color 0.25s var(--ease);
+  }
+
+  .action-ghost:hover {
+    color: var(--paper-strong);
+    border-color: var(--line-strong);
+  }
+
+  .hero-sign {
+    margin-top: 30px;
+    font-size: 0.71rem;
+    letter-spacing: 0.14em;
+    color: var(--paper-faint);
+    text-transform: uppercase;
+  }
+
+  /* 归档卡片 */
+  .file-card {
+    position: relative;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.022), rgba(255, 255, 255, 0.008));
+    padding: 20px 22px 16px;
+    overflow: hidden;
+  }
+
+  .file-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(240px 160px at 85% 0%, rgba(214, 167, 86, 0.09), transparent 70%);
+    pointer-events: none;
+  }
+
+  .file-head {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.62rem;
+    letter-spacing: 0.18em;
+    color: var(--paper-faint);
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--line-soft);
+  }
+
+  .file-no {
+    color: var(--brass);
+    opacity: 0.7;
+  }
+
+  .file-rows {
+    margin: 0;
+    padding-block: 4px;
+  }
+
+  .file-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 0;
+    border-bottom: 1px dashed var(--line-soft);
+  }
+
+  .file-row:last-child {
+    border-bottom: 0;
+  }
+
+  .file-row dt {
+    font-size: 0.66rem;
+    letter-spacing: 0.12em;
+    color: var(--paper-faint);
+    text-transform: uppercase;
+  }
+
+  .file-row dd {
+    margin: 0;
+    color: var(--paper-strong);
+  }
+
+  .file-row .num {
+    font-size: 1.42rem;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    color: var(--paper-strong);
+  }
+
+  .file-row .sm {
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+    color: var(--paper-dim);
+  }
+
+  .file-foot {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line-soft);
+    font-size: 0.62rem;
+    letter-spacing: 0.06em;
+    color: var(--paper-faint);
+  }
+
+  .pulse {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--jade);
+    box-shadow: 0 0 0 0 rgba(125, 167, 154, 0.6);
+    animation: pulse 2.6s infinite;
+  }
+
+  @keyframes pulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(125, 167, 154, 0.5);
+    }
+    70% {
+      box-shadow: 0 0 0 7px rgba(125, 167, 154, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(125, 167, 154, 0);
+    }
+  }
+
+  .note-list {
+    display: block;
+    border-bottom: 1px solid var(--line-soft);
+  }
+
+  /* 入口网格 */
+  .entry-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1px;
+    background: var(--line-soft);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-top: 26px;
+  }
+
+  .entry {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 30px 28px 22px;
+    background: var(--ink-0);
+    transition: background-color 0.35s var(--ease);
+  }
+
+  .entry::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, var(--brass), transparent 60%);
+    opacity: 0;
+    transition: opacity 0.35s var(--ease);
+  }
+
+  .entry:hover {
+    background: var(--ink-2);
+  }
+
+  .entry:hover::before {
+    opacity: 0.7;
+  }
+
+  .entry-idx {
+    font-size: 0.62rem;
+    letter-spacing: 0.16em;
+    color: var(--brass);
+    opacity: 0.7;
+  }
+
+  .entry-title {
+    font-size: 1.22rem;
+    letter-spacing: -0.01em;
+  }
+
+  .entry-desc {
+    font-size: 0.88rem;
+    line-height: 1.8;
+    color: var(--paper-dim);
+    max-width: 34ch;
+    text-wrap: pretty;
+  }
+
+  .entry-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: auto;
+    padding-top: 18px;
+  }
+
+  .entry-arrow {
+    color: var(--paper-faint);
+    transition: transform 0.3s var(--ease), color 0.3s var(--ease);
+  }
+
+  .entry:hover .entry-arrow {
+    color: var(--brass);
+    transform: translate(3px, -3px);
+  }
+
+  /* 最近记录 */
+  .recent-list {
+    list-style: none;
+    margin-top: 8px;
+  }
+
+  .recent-item {
+    display: grid;
+    grid-template-columns: 92px 62px minmax(0, 1fr);
+    gap: 20px;
+    align-items: baseline;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--line-soft);
+  }
+
+  .recent-item time {
+    font-size: 0.72rem;
+    letter-spacing: 0.05em;
+    color: var(--paper-faint);
+  }
+
+  .kind {
+    font-size: 0.66rem;
+    letter-spacing: 0.1em;
+    color: var(--k);
+    border: 1px solid color-mix(in srgb, var(--k) 32%, transparent);
+    border-radius: 3px;
+    padding: 1px 7px;
+    justify-self: start;
+    opacity: 0.9;
+  }
+
+  .recent-title {
+    font-size: 0.98rem;
+    color: var(--paper-strong);
+  }
+
+  .recent-desc {
+    margin-top: 6px;
+    font-size: 0.85rem;
+    line-height: 1.75;
+    color: var(--paper-faint);
+    max-width: 70ch;
+    text-wrap: pretty;
+  }
+
+  /* 收尾 */
+  .closing {
+    margin-top: clamp(40px, 8vw, 96px);
+  }
+
+  .closing-inner {
+    position: relative;
+    padding: clamp(38px, 6vw, 64px) clamp(8px, 4vw, 48px);
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    text-align: center;
+  }
+
+  .quote-mark {
+    display: block;
+    font-size: 3.4rem;
+    line-height: 0.4;
+    color: var(--brass);
+    opacity: 0.35;
+    margin-bottom: 22px;
+  }
+
+  .closing-text {
+    font-size: clamp(1.25rem, 2.6vw, 1.75rem);
+    line-height: 1.75;
+    letter-spacing: -0.01em;
+    color: var(--paper-strong);
+    margin-bottom: 24px;
+    text-wrap: balance;
+  }
+
+  @media (max-width: 900px) {
+    .hero-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .file-card {
+      max-width: 460px;
+    }
+    .entry-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  @media (max-width: 640px) {
+    .recent-item {
+      grid-template-columns: 78px minmax(0, 1fr);
+      gap: 12px 14px;
+    }
+    .recent-body {
+      grid-column: 1 / -1;
+    }
+    .kind {
+      justify-self: end;
+    }
+    .entry {
+      padding: 24px 20px 20px;
+    }
+  }
+</style>

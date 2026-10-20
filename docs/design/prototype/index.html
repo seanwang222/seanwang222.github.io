@@ -1,0 +1,1200 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>原型 · 简历与影像 — Sichen Wang</title>
+<style>
+/* ============================================================
+   原型令牌：与 src/styles/global.css 完全同源，未新增颜色
+   ============================================================ */
+:root {
+  --ink-0: #08090a;
+  --ink-1: #0d0e11;
+  --ink-2: #121418;
+  --ink-3: #191c21;
+
+  --paper: #e9e6df;
+  --paper-strong: #f4f1ea;
+  --paper-dim: #a29d94;
+  --paper-faint: #6d6a63;
+
+  --brass: #d6a756;
+  --brass-soft: rgba(214, 167, 86, 0.14);
+  --brass-line: rgba(214, 167, 86, 0.32);
+  --jade: #7da79a;
+  --rose: #c98b8b;
+  --sky: #86a0c6;
+
+  --line: rgba(233, 230, 223, 0.11);
+  --line-soft: rgba(233, 230, 223, 0.06);
+  --line-strong: rgba(233, 230, 223, 0.2);
+
+  --font-sans: "PingFang SC", "HarmonyOS Sans SC", "Source Han Sans SC",
+    "Microsoft YaHei", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia,
+    "Times New Roman", "Songti SC", serif;
+  --font-mono: "Cascadia Code", "JetBrains Mono", "SF Mono", "SFMono-Regular",
+    Consolas, "Liberation Mono", monospace;
+
+  --fs-body: 1.0625rem;
+  --fs-small: 0.875rem;
+  --fs-micro: 0.72rem;
+
+  --wrap: 1120px;
+  --gutter: clamp(20px, 5vw, 56px);
+  --radius: 10px;
+  --ease: cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+html, body { margin: 0; padding: 0; background: var(--ink-0); }
+
+/* ============================================================
+   根容器
+   ============================================================ */
+.pp {
+  position: relative;
+  background: var(--ink-0);
+  color: var(--paper);
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  line-height: 1.8;
+  letter-spacing: 0.011em;
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: "palt" 1;
+  overflow-x: hidden;
+}
+
+.pp::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(760px 520px at 12% -8%, rgba(214, 167, 86, 0.07), transparent 62%),
+    radial-gradient(680px 460px at 92% 4%, rgba(125, 167, 154, 0.05), transparent 60%);
+}
+
+.pp > * { position: relative; z-index: 1; }
+
+*, *::before, *::after { box-sizing: border-box; }
+.pp h1, .pp h2, .pp h3, .pp h4 { margin: 0; font-weight: 600; line-height: 1.32; letter-spacing: -0.012em; color: var(--paper-strong); text-wrap: balance; }
+.pp p { margin: 0; }
+.pp a { color: inherit; text-decoration: none; }
+.pp img { display: block; max-width: 100%; }
+.pp ul, .pp ol { margin: 0; padding: 0; list-style: none; }
+.pp button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
+.pp ::selection { background: rgba(214, 167, 86, 0.28); color: var(--paper-strong); }
+.pp :focus-visible { outline: 1px solid var(--brass); outline-offset: 3px; border-radius: 2px; }
+
+/* 原语（与 global.css 同名同值） */
+.pp .wrap { width: 100%; max-width: var(--wrap); margin-inline: auto; padding-inline: var(--gutter); }
+.pp .eyebrow { display: inline-flex; align-items: center; gap: 0.6em; font-family: var(--font-mono); font-size: var(--fs-micro); letter-spacing: 0.2em; text-transform: uppercase; color: var(--paper-faint); font-weight: 400; }
+.pp .eyebrow::before { content: ""; width: 14px; height: 1px; background: var(--brass-line); flex: none; }
+.pp .mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.pp .serif { font-family: var(--font-serif); font-weight: 400; }
+.pp .dim { color: var(--paper-dim); }
+.pp .faint { color: var(--paper-faint); }
+.pp .micro { font-size: 0.66rem; letter-spacing: 0.1em; }
+.pp .section { padding-block: clamp(40px, 6vw, 72px); }
+.pp .section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 24px; padding-bottom: 18px; border-bottom: 1px solid var(--line); margin-bottom: 8px; }
+.pp .section-title { font-size: clamp(1.15rem, 2vw, 1.4rem); display: flex; align-items: baseline; gap: 14px; }
+.pp .section-title .idx { font-family: var(--font-mono); font-size: var(--fs-micro); color: var(--brass); letter-spacing: 0.16em; transform: translateY(-1px); }
+.pp .arrow-link { display: inline-flex; align-items: center; gap: 0.5em; font-family: var(--font-mono); font-size: var(--fs-micro); letter-spacing: 0.14em; text-transform: uppercase; color: var(--paper-dim); transition: color 0.25s var(--ease); }
+.pp .arrow-link .arw { transition: transform 0.3s var(--ease); }
+.pp .arrow-link:hover { color: var(--brass); }
+.pp .arrow-link:hover .arw { transform: translateX(4px); }
+.pp .link-quiet { position: relative; color: var(--paper); border-bottom: 1px solid var(--line-strong); padding-bottom: 1px; transition: color 0.25s var(--ease), border-color 0.25s var(--ease); }
+.pp .link-quiet:hover { color: var(--brass); border-color: var(--brass-line); }
+.pp .chip { display: inline-flex; align-items: center; gap: 0.4em; padding: 0.22em 0.66em; border: 1px solid var(--line); border-radius: 99px; font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.04em; color: var(--paper-dim); background: rgba(255,255,255,0.015); transition: border-color 0.25s var(--ease), color 0.25s var(--ease), background-color 0.25s var(--ease); }
+.pp button.chip:hover, .pp a.chip:hover { border-color: var(--brass-line); color: var(--brass); }
+.pp .chip[aria-pressed="true"], .pp .chip.is-active { border-color: var(--brass-line); background: var(--brass-soft); color: var(--brass); }
+.pp .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+
+/* ============================================================
+   原型提示条
+   ============================================================ */
+.proto-bar {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  padding: 9px var(--gutter);
+  background: linear-gradient(90deg, rgba(214,167,86,0.1), rgba(214,167,86,0.02));
+  border-bottom: 1px solid var(--brass-line);
+  font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.08em; color: var(--paper-dim);
+}
+.proto-bar b { color: var(--brass); font-weight: 400; }
+.proto-bar .spacer { flex: 1; }
+.proto-bar button {
+  font-family: var(--font-mono); font-size: 0.64rem; letter-spacing: 0.1em;
+  padding: 4px 10px; border: 1px solid var(--line); border-radius: 99px; color: var(--paper-dim);
+  transition: color .25s var(--ease), border-color .25s var(--ease), background-color .25s var(--ease);
+}
+.proto-bar button:hover { color: var(--brass); border-color: var(--brass-line); }
+.proto-bar button[aria-pressed="true"] { background: var(--brass-soft); border-color: var(--brass-line); color: var(--brass); }
+
+/* ============================================================
+   头部
+   ============================================================ */
+.site-header {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(8, 9, 10, 0.78);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  border-bottom: 1px solid var(--line-soft);
+}
+.bar { display: flex; align-items: center; justify-content: space-between; gap: 20px; height: 66px; }
+.brand { display: inline-flex; align-items: center; gap: 11px; min-width: 0; }
+.monogram { display: grid; place-items: center; width: 30px; height: 30px; flex: none; font-size: 0.82rem; letter-spacing: 0.02em; color: var(--brass); border: 1px solid var(--brass-line); border-radius: 6px; background: rgba(214,167,86,0.05); font-family: var(--font-serif); }
+.brand-text { display: flex; flex-direction: column; line-height: 1.2; }
+.brand-name { font-size: 0.92rem; font-weight: 600; color: var(--paper-strong); }
+.brand-handle { font-size: 0.66rem; color: var(--paper-faint); letter-spacing: 0.06em; font-family: var(--font-mono); }
+.nav { display: flex; align-items: center; gap: clamp(13px, 1.9vw, 26px); }
+.nav-link { display: inline-flex; flex-direction: column; gap: 1px; padding-block: 6px; color: var(--paper-dim); transition: color 0.25s var(--ease); position: relative; }
+.nav-label { font-size: 0.83rem; letter-spacing: 0.05em; }
+.nav-en { font-size: 0.58rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--paper-faint); opacity: 0.75; }
+.nav-link:hover, .nav-link.active { color: var(--paper-strong); }
+.nav-link.active .nav-en { color: var(--brass); opacity: 1; }
+.nav-link.active::after { content: ""; position: absolute; left: 0; right: 0; bottom: -8px; height: 1px; background: var(--brass); opacity: 0.75; }
+.nav-link[data-stub] .nav-label { border-bottom: 1px dashed var(--line-strong); }
+
+/* 简历 CTA：目的地而非浏览路径，所以不混在文字项里 */
+.nav-cta {
+  display: inline-flex; align-items: baseline; gap: 7px;
+  padding: 7px 14px; border: 1px solid var(--brass-line); border-radius: 99px;
+  color: var(--brass); background: rgba(214,167,86,0.04);
+  transition: background-color .3s var(--ease), color .3s var(--ease), transform .3s var(--ease);
+}
+.nav-cta .cn { font-size: 0.82rem; letter-spacing: 0.06em; }
+.nav-cta .en { font-family: var(--font-mono); font-size: 0.58rem; letter-spacing: 0.14em; text-transform: uppercase; opacity: .8; }
+.nav-cta:hover { background: var(--brass-soft); transform: translateY(-1px); }
+.nav-cta.active { background: var(--brass); color: #14100a; }
+.nav-cta.active .en { opacity: .75; }
+
+.menu-btn { display: none; width: 38px; height: 38px; place-items: center; border: 1px solid var(--line); border-radius: 8px; }
+.menu-lines { display: grid; gap: 5px; width: 16px; }
+.menu-lines i { display: block; height: 1px; background: var(--paper-dim); transition: transform 0.25s var(--ease); }
+.menu-btn[aria-expanded="true"] .menu-lines i:first-child { transform: translateY(3px) rotate(45deg); }
+.menu-btn[aria-expanded="true"] .menu-lines i:last-child { transform: translateY(-3px) rotate(-45deg); }
+.mobile-nav { display: none; flex-direction: column; padding: 6px var(--gutter) 22px; border-top: 1px solid var(--line-soft); }
+.mobile-link { display: flex; align-items: baseline; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid var(--line-soft); font-size: 0.95rem; color: var(--paper-dim); }
+.mobile-link.active { color: var(--brass); }
+.mobile-link .en { font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--paper-faint); }
+.mobile-link.cta { border-left: 14px solid transparent; }
+.mobile-link.cta::before { content: ""; width: 14px; height: 1px; background: var(--brass-line); align-self: center; margin-right: 10px; }
+
+@media (max-width: 900px) {
+  .nav { gap: clamp(11px, 1.6vw, 18px); }
+  .nav-label { font-size: 0.78rem; }
+}
+@media (max-width: 820px) {
+  .nav, .nav-cta { display: none; }
+  .menu-btn { display: grid; }
+  .mobile-nav { display: flex; }
+  .mobile-nav[hidden] { display: none; }
+}
+
+/* ============================================================
+   通用页面骨架
+   ============================================================ */
+.page[hidden] { display: none; }
+.page-head { padding-block: clamp(44px, 7vw, 84px) clamp(10px, 2vw, 22px); }
+.page-title { margin-top: 22px; font-size: clamp(2.1rem, 4.6vw, 3.2rem); line-height: 1.3; letter-spacing: -0.02em; }
+.page-lede { margin-top: 20px; max-width: 54ch; font-size: 1.02rem; line-height: 1.95; color: var(--paper-dim); text-wrap: pretty; }
+.page-meta { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 26px; font-family: var(--font-mono); font-size: var(--fs-micro); letter-spacing: 0.1em; color: var(--paper-faint); }
+.page-meta span { display: inline-flex; align-items: center; gap: 8px; }
+.page-meta span + span::before { content: ""; width: 1px; height: 10px; background: var(--line); margin-right: -2px; }
+
+/* ============================================================
+   简历
+   ============================================================ */
+.resume-grid { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(262px, 0.85fr); gap: clamp(28px, 4.4vw, 62px); align-items: start; }
+.resume-aside { position: sticky; top: 90px; display: grid; gap: 18px; }
+
+.r-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+.r-name { font-size: clamp(2.1rem, 4.6vw, 3.1rem); letter-spacing: -0.02em; }
+.r-headline { margin-top: 12px; font-size: 1.05rem; color: var(--paper-dim); max-width: 46ch; }
+.r-sign { margin-top: 18px; font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.13em; text-transform: uppercase; color: var(--paper-faint); }
+.r-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.btn-print { display: inline-flex; align-items: center; gap: 9px; padding: 10px 18px; border-radius: 6px; background: var(--brass); color: #14100a; font-size: 0.88rem; font-weight: 600; transition: background-color .3s var(--ease), transform .3s var(--ease), box-shadow .3s var(--ease); }
+.btn-print:hover { background: #e2b566; transform: translateY(-1px); box-shadow: 0 8px 26px -14px rgba(214,167,86,0.8); }
+.btn-ghost { display: inline-flex; align-items: center; padding: 10px 15px; border: 1px solid var(--line); border-radius: 6px; font-size: 0.84rem; color: var(--paper-dim); transition: color .25s var(--ease), border-color .25s var(--ease); }
+.btn-ghost:hover { color: var(--paper-strong); border-color: var(--line-strong); }
+
+/* 归档卡（首页 file-card 的复用形态） */
+.card { position: relative; border: 1px solid var(--line); border-radius: var(--radius); background: linear-gradient(180deg, rgba(255,255,255,0.022), rgba(255,255,255,0.008)); padding: 18px 20px 14px; overflow: hidden; }
+.card::after { content: ""; position: absolute; inset: 0; background: radial-gradient(240px 160px at 85% 0%, rgba(214,167,86,0.09), transparent 70%); pointer-events: none; }
+.card-head { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.18em; color: var(--paper-faint); padding-bottom: 12px; border-bottom: 1px solid var(--line-soft); }
+.card-head .no { color: var(--brass); opacity: .7; }
+.card-rows { margin: 0; padding-block: 2px; }
+.card-row { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; padding: 10px 0; border-bottom: 1px dashed var(--line-soft); }
+.card-row:last-child { border-bottom: 0; }
+.card-row dt { font-family: var(--font-mono); font-size: 0.64rem; letter-spacing: 0.12em; color: var(--paper-faint); text-transform: uppercase; }
+.card-row dd { margin: 0; font-size: 0.84rem; color: var(--paper-strong); text-align: right; min-width: 0; overflow-wrap: anywhere; }
+.card-row dd.num { font-family: var(--font-serif); font-size: 1.3rem; line-height: 1; }
+.card-foot { display: flex; align-items: center; gap: 8px; padding-top: 12px; border-top: 1px solid var(--line-soft); font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: .06em; color: var(--paper-faint); }
+.pulse { width: 5px; height: 5px; border-radius: 50%; background: var(--jade); box-shadow: 0 0 0 0 rgba(125,167,154,0.6); animation: pulse 2.6s infinite; flex: none; }
+@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(125,167,154,0.5); } 70% { box-shadow: 0 0 0 7px rgba(125,167,154,0); } 100% { box-shadow: 0 0 0 0 rgba(125,167,154,0); } }
+
+/* 能力：结论 + 证据 */
+.strength { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 16px; padding: 20px 0; border-bottom: 1px solid var(--line-soft); }
+.strength:last-child { border-bottom: 0; }
+.strength .n { font-family: var(--font-mono); font-size: 0.66rem; color: var(--brass); opacity: .75; padding-top: 5px; }
+.strength h3 { font-size: 1.02rem; letter-spacing: -0.005em; }
+.strength .claim { margin-top: 8px; font-size: 0.92rem; line-height: 1.85; color: var(--paper-dim); max-width: 62ch; text-wrap: pretty; }
+.strength .proof { display: inline-flex; align-items: center; gap: 7px; margin-top: 10px; font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.08em; color: var(--paper-faint); border-bottom: 1px solid transparent; transition: color .25s var(--ease), border-color .25s var(--ease); }
+.strength .proof:hover { color: var(--brass); border-color: var(--brass-line); }
+
+/* 经历 */
+.exp { padding: 22px 0; border-bottom: 1px solid var(--line-soft); display: grid; grid-template-columns: 108px minmax(0, 1fr); gap: 20px; }
+.exp:last-child { border-bottom: 0; }
+.exp-when { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: .04em; color: var(--paper-faint); padding-top: 4px; }
+.exp-role { font-size: 1.02rem; }
+.exp-org { margin-top: 3px; font-size: 0.88rem; color: var(--brass); }
+.exp-org .loc { color: var(--paper-faint); }
+.exp ul { margin-top: 12px; display: grid; gap: 7px; }
+.exp li { position: relative; padding-left: 17px; font-size: 0.92rem; line-height: 1.85; color: var(--paper-dim); max-width: 66ch; text-wrap: pretty; }
+.exp li::before { content: ""; position: absolute; left: 0; top: 0.85em; width: 8px; height: 1px; background: var(--brass-line); }
+.exp .stack { margin-top: 12px; display: flex; gap: 6px; flex-wrap: wrap; }
+.exp.is-todo { border: 1px dashed var(--line-strong); border-radius: var(--radius); padding: 20px; grid-template-columns: 1fr; background: rgba(255,255,255,0.012); }
+.exp.is-todo .todo-tag { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: .16em; text-transform: uppercase; color: var(--rose); }
+.exp.is-todo p { margin-top: 8px; font-size: 0.88rem; color: var(--paper-faint); max-width: 60ch; }
+
+/* 项目 */
+.proj { display: grid; grid-template-columns: minmax(0, 1fr) 132px; gap: 18px; padding: 22px 0; border-bottom: 1px solid var(--line-soft); }
+.proj:last-child { border-bottom: 0; }
+.proj-name { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.proj-name h3 { font-size: 1.06rem; }
+.proj-name .zh { font-size: 0.8rem; color: var(--paper-faint); }
+.proj-tag { margin-top: 7px; font-size: 0.9rem; color: var(--paper-dim); max-width: 62ch; }
+.proj ul { margin-top: 12px; display: grid; gap: 8px; }
+.proj li { font-size: 0.88rem; line-height: 1.8; color: var(--paper-faint); padding-left: 17px; position: relative; max-width: 66ch; }
+.proj li::before { content: ""; position: absolute; left: 0; top: 0.85em; width: 8px; height: 1px; background: var(--line-strong); }
+.proj li b { color: var(--paper-dim); font-weight: 500; }
+.proj-side { display: grid; align-content: start; gap: 10px; justify-items: end; text-align: right; }
+.proj-metric { font-family: var(--font-serif); font-size: 1.5rem; line-height: 1; color: var(--paper-strong); }
+.proj-metric-l { font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: .14em; text-transform: uppercase; color: var(--paper-faint); margin-top: 4px; }
+
+/* 技术栈矩阵 */
+.stack-group { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 18px; padding: 16px 0; border-bottom: 1px solid var(--line-soft); align-items: baseline; }
+.resume-aside .stack-group { grid-template-columns: minmax(0, 1fr); gap: 7px; }
+.stack-group:last-child { border-bottom: 0; }
+.stack-group .g { font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: .12em; text-transform: uppercase; color: var(--paper-faint); }
+.stack-items { display: flex; flex-wrap: wrap; gap: 8px 10px; }
+.skill { display: inline-flex; align-items: baseline; gap: 7px; font-size: 0.86rem; color: var(--paper); }
+.skill .tier { font-family: var(--font-mono); font-size: 0.58rem; letter-spacing: .1em; text-transform: uppercase; color: var(--paper-faint); border: 1px solid var(--line); border-radius: 3px; padding: 1px 5px; }
+.skill[data-tier="primary"] .tier { color: var(--brass); border-color: var(--brass-line); background: var(--brass-soft); }
+.skill[data-tier="familiar"] .tier { color: var(--paper-faint); }
+
+/* 其他 */
+.extras { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 1px; background: var(--line-soft); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.extra { background: var(--ink-0); padding: 18px 20px; display: grid; gap: 5px; transition: background-color .3s var(--ease); }
+.extra:hover { background: var(--ink-2); }
+.extra .k { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: .14em; text-transform: uppercase; color: var(--paper-faint); }
+.extra .v { font-size: 0.92rem; color: var(--paper-strong); }
+.extra .v a { border-bottom: 1px solid var(--brass-line); color: var(--brass); }
+.extra.is-todo .v { color: var(--paper-faint); font-style: normal; border-bottom: 1px dashed var(--line-strong); }
+
+.r-foot { margin-top: 34px; padding-top: 16px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; gap: 18px; flex-wrap: wrap; font-family: var(--font-mono); font-size: 0.64rem; letter-spacing: .08em; color: var(--paper-faint); }
+
+@media (max-width: 900px) {
+  .resume-grid { grid-template-columns: minmax(0, 1fr); }
+  .resume-aside { position: static; }
+  .proj { grid-template-columns: minmax(0, 1fr); }
+  .proj-side { justify-items: start; text-align: left; grid-auto-flow: column; justify-content: start; gap: 18px; }
+}
+@media (max-width: 620px) {
+  .exp { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .stack-group { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+}
+
+/* ============================================================
+   影像
+   ============================================================ */
+.photos-top { display: grid; grid-template-columns: minmax(0, 1fr) minmax(262px, 0.85fr); gap: clamp(28px, 4.4vw, 62px); align-items: start; }
+.filters { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 26px; }
+.filters .lab { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: .16em; text-transform: uppercase; color: var(--paper-faint); margin-right: 4px; }
+.filters .chip .c { opacity: .6; font-size: 0.62rem; }
+.count { margin-top: 14px; font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: .1em; color: var(--paper-faint); }
+
+/* 瀑布网格：CSS 多列 + 保留原始宽高比（不裁切、无 JS 测量、打印与窄屏都稳）
+   —— 若需要严格按日期左→右阅读，再换 JS 行跨度方案，代价是多一处测量与重排 */
+.photo-grid { columns: 3; column-gap: clamp(10px, 1.6vw, 18px); margin-top: 24px; }
+.photo-cell { position: relative; display: block; width: 100%; padding: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; background: var(--ink-2); aspect-ratio: var(--r, 1.5); margin: 0 0 clamp(10px, 1.6vw, 18px); break-inside: avoid; transition: border-color .35s var(--ease); }
+.photo-cell[data-feature] { border-color: var(--brass-line); }
+.photo-cell img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: brightness(.92) saturate(.96); transition: filter .45s var(--ease); }
+.photo-cell:hover img, .photo-cell:focus-visible img { filter: brightness(1.05) saturate(1); }
+.photo-cell:hover { border-color: var(--brass-line); }
+.cell-meta { position: absolute; left: 0; right: 0; bottom: 0; padding: 22px 14px 12px; display: flex; align-items: baseline; justify-content: space-between; gap: 12px; background: linear-gradient(180deg, transparent, rgba(8,9,10,0.86)); border-top: 1px solid var(--brass-line); opacity: 0; transform: translateY(6px); transition: opacity .35s var(--ease), transform .35s var(--ease); }
+.photo-cell:hover .cell-meta, .photo-cell:focus-visible .cell-meta { opacity: 1; transform: none; }
+.cell-meta .t { font-size: 0.82rem; color: var(--paper-strong); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cell-meta .x { font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: .06em; color: var(--paper-dim); white-space: nowrap; }
+.cell-badge { position: absolute; top: 10px; left: 10px; font-family: var(--font-mono); font-size: 0.56rem; letter-spacing: .14em; text-transform: uppercase; color: var(--brass); background: rgba(8,9,10,.72); border: 1px solid var(--brass-line); border-radius: 3px; padding: 2px 7px; }
+.photo-grid[hidden] { display: none; }
+.empty { padding: 46px 0; font-size: 0.92rem; color: var(--paper-dim); }
+
+/* stage：就地展开的大图 + 信息面板 */
+.stage { display: grid; grid-template-columns: minmax(0, 1.62fr) minmax(258px, 0.9fr); gap: clamp(20px, 3vw, 38px); align-items: start; padding: 22px 0 8px; margin-bottom: 8px; border-top: 1px solid var(--brass-line); border-bottom: 1px solid var(--line); scroll-margin-top: 96px; }
+.stage[hidden] { display: none; }
+.stage-img { border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; background: var(--ink-1); }
+.stage-img img { width: 100%; height: auto; }
+.stage-panel { display: grid; gap: 12px; align-content: start; }
+.stage-panel h3 { font-size: 1.24rem; }
+.stage-panel .cap { font-size: 0.92rem; line-height: 1.9; color: var(--paper-dim); max-width: 46ch; text-wrap: pretty; }
+.exif { margin: 4px 0 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 18px; }
+.exif div { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 8px 0; border-bottom: 1px dashed var(--line-soft); }
+.exif dt { font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: .12em; text-transform: uppercase; color: var(--paper-faint); }
+.exif dd { margin: 0; font-family: var(--font-mono); font-size: 0.76rem; color: var(--paper-strong); }
+.stage-nav { display: flex; gap: 8px; flex-wrap: wrap; padding-top: 4px; }
+.stage-nav button { font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: .12em; text-transform: uppercase; padding: 8px 13px; border: 1px solid var(--line); border-radius: 6px; color: var(--paper-dim); transition: color .25s var(--ease), border-color .25s var(--ease), background-color .25s var(--ease); }
+.stage-nav button:hover { color: var(--brass); border-color: var(--brass-line); background: var(--brass-soft); }
+.stage-rights { font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: .08em; color: var(--paper-faint); }
+.stage:focus { outline: none; }
+.stage:focus-visible { outline: 1px solid var(--brass); outline-offset: 6px; border-radius: 4px; }
+
+@media (max-width: 900px) {
+  .photos-top { grid-template-columns: minmax(0, 1fr); }
+  .stage { grid-template-columns: minmax(0, 1fr); }
+  .photo-grid { columns: 2; }
+}
+@media (max-width: 560px) { .photo-grid { columns: 1; } }
+
+/* ============================================================
+   页脚
+   ============================================================ */
+.site-footer { margin-top: clamp(50px, 8vw, 110px); border-top: 1px solid var(--line); background: linear-gradient(180deg, transparent, rgba(214,167,86,0.018)); }
+.foot-grid { display: grid; grid-template-columns: 1.6fr 1fr 1fr; gap: 40px; padding-block: clamp(38px, 5vw, 62px); }
+.foot-name { font-size: 1.35rem; color: var(--paper-strong); font-family: var(--font-serif); }
+.foot-tag { margin-top: 10px; max-width: 34ch; font-size: 0.88rem; line-height: 1.85; color: var(--paper-faint); }
+.foot-label { font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--paper-faint); margin-bottom: 14px; }
+.foot-list { display: grid; gap: 9px; font-size: 0.88rem; }
+.foot-list .link-quiet { color: var(--paper-dim); border-bottom-color: transparent; }
+.foot-list .link-quiet:hover { color: var(--brass); }
+.foot-bottom { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding-block: 16px 24px; border-top: 1px solid var(--line-soft); font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.04em; color: var(--paper-faint); }
+.foot-bottom .spacer { flex: 1; }
+@media (max-width: 720px) { .foot-grid { grid-template-columns: 1fr 1fr; gap: 28px; } .identity { grid-column: 1 / -1; } }
+
+/* ============================================================
+   动效
+   ============================================================ */
+.pp [data-reveal] { opacity: 0; transform: translateY(10px); }
+.pp [data-reveal].is-in { animation: rise 0.75s var(--ease) forwards; }
+@keyframes rise { to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .pp *, .pp *::before, .pp *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+  .pp [data-reveal] { opacity: 1; transform: none; }
+}
+
+/* ============================================================
+   打印：全部规则挂在 .is-print 上
+   —— beforeprint 自动加类，「打印版预览」开关手动加同一个类，
+      两者共用一套规则，永不漂移；只有 @page 留在 @media print 里
+   ============================================================ */
+.pp.is-print {
+  --ink-0: #ffffff; --ink-1: #f7f7f5; --ink-2: #f2f2ef; --ink-3: #e9e9e5;
+  --paper: #1c1c1c; --paper-strong: #000000; --paper-dim: #3f3f3f; --paper-faint: #6f6f6f;
+  --brass: #8a6a2f; --brass-soft: rgba(138,106,47,0.1); --brass-line: rgba(138,106,47,0.34);
+  --line: rgba(0,0,0,0.16); --line-soft: rgba(0,0,0,0.09); --line-strong: rgba(0,0,0,0.3);
+
+  font-size: 0.8rem; line-height: 1.5; letter-spacing: 0;
+}
+.pp.is-print::before, .pp.is-print .no-print, .pp.is-print .proto-bar,
+.pp.is-print .site-footer, .pp.is-print .r-actions,
+.pp.is-print .exp.is-todo, .pp.is-print .extra.is-todo { display: none !important; }
+.pp.is-print .site-header { display: none; }
+.pp.is-print .resume-aside { position: static; }
+.pp.is-print .card::after, .pp.is-print .photo-cell img { filter: none; }
+.pp.is-print .wrap { max-width: none; padding-inline: 0; }
+.pp.is-print .r-head { padding-block: 0 3mm; }
+.pp.is-print .r-name { font-size: 1.5rem; }
+.pp.is-print .r-headline { margin-top: 1mm; font-size: 0.86rem; }
+.pp.is-print .r-sign { margin-top: 1.5mm; font-size: 0.6rem; }
+.pp.is-print .section { padding-block: 4mm 1mm; }
+.pp.is-print .section-head { padding-bottom: 1.2mm; margin-bottom: 1mm; }
+.pp.is-print .section-title { font-size: 0.9rem; }
+.pp.is-print .page-lede { margin-top: 2mm; font-size: 0.78rem; line-height: 1.55; }
+.pp.is-print .strength, .pp.is-print .exp, .pp.is-print .proj { padding-block: 1.8mm; }
+.pp.is-print .strength h3, .pp.is-print .exp-role, .pp.is-print .proj-name h3 { font-size: 0.84rem; }
+.pp.is-print .claim, .pp.is-print .exp li, .pp.is-print .proj li, .pp.is-print .proj-tag { font-size: 0.76rem; line-height: 1.5; }
+.pp.is-print .strength .proof { margin-top: 1mm; font-size: 0.62rem; }
+.pp.is-print .exp ul { margin-top: 1.5mm; gap: 1mm; }
+.pp.is-print .exp .stack { margin-top: 1.5mm; }
+.pp.is-print .chip { font-size: 0.62rem; padding: 0.1em 0.5em; }
+.pp.is-print .card { padding: 2mm 2.5mm 1.5mm; }
+.pp.is-print .card-row { padding: 1mm 0; }
+.pp.is-print .card-row dd.num { font-size: 1rem; }
+.pp.is-print .stack-group { padding-block: 1.5mm; }
+.pp.is-print .extras { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.pp.is-print .extra { padding: 1.5mm 2mm; }
+.pp.is-print .r-foot { margin-top: 2mm; padding-top: 1.5mm; font-size: 0.6rem; }
+.pp.is-print .resume-grid { gap: 6mm; }
+/* 纸上不需要「可点击的 affordance」：证据链接保留标题但去掉 ↳ 前缀，
+   技术栈 chips 与状态 chip 已由 04 区块承载，打印时直接隐去 */
+.pp.is-print .exp .stack, .pp.is-print .proj-side .chip, .pp.is-print .cell-badge { display: none !important; }
+.pp.is-print .strength .proof { font-size: 0.66rem; }
+.pp.is-print .strength .proof::before { content: '证据：'; }
+.pp.is-print { font-size: 0.78rem; line-height: 1.45; }
+.pp.is-print .section { padding-block: 3.2mm 0.6mm; }
+/* A4 内容宽约 695px，会命中 <=900px 的屏显断点而塌成单栏；
+   打印必须显式恢复双栏，否则页数直接翻倍 */
+.pp.is-print .resume-grid { gap: 5mm; grid-template-columns: minmax(0, 1.6fr) minmax(150px, 0.8fr); align-items: start; }
+.pp.is-print .exp { grid-template-columns: 76px minmax(0, 1fr); gap: 10px; }
+.pp.is-print .stack-group { grid-template-columns: minmax(0, 1fr); }
+.pp.is-print .photos-top, .pp.is-print .stage { grid-template-columns: minmax(0, 1fr); }
+.pp.is-print .strength, .pp.is-print .exp, .pp.is-print .proj { break-inside: avoid; }
+.pp.is-print h2 { break-after: avoid; }
+
+@media print {
+  @page { size: A4; margin: 14mm 13mm; }
+}
+</style>
+</head>
+<body>
+<div class="pp" id="pp-root">
+
+  <div class="proto-bar no-print">
+    <span><b>设计原型</b> · 简历 / 影像两页 · 规范见 docs/design/resume-and-photography.md</span>
+    <span class="spacer"></span>
+    <button type="button" id="btn-print-preview" aria-pressed="false">打印版预览</button>
+    <button type="button" id="btn-motion" aria-pressed="false">减动效</button>
+  </div>
+
+  <header class="site-header">
+    <div class="wrap bar">
+      <a class="brand" href="#resume" aria-label="Sichen Wang 首页">
+        <span class="monogram">SW</span>
+        <span class="brand-text">
+          <span class="brand-name">Sichen Wang</span>
+          <span class="brand-handle">@SeanHub</span>
+        </span>
+      </a>
+
+      <nav class="nav" aria-label="主导航">
+        <a class="nav-link" href="#stub" data-stub="知识空间"><span class="nav-label">知识空间</span><span class="nav-en">Knowledge</span></a>
+        <a class="nav-link" href="#stub" data-stub="知识图谱"><span class="nav-label">知识图谱</span><span class="nav-en">Graph</span></a>
+        <a class="nav-link" href="#stub" data-stub="时间线"><span class="nav-label">时间线</span><span class="nav-en">Timeline</span></a>
+        <a class="nav-link" href="#stub" data-stub="作品"><span class="nav-label">作品</span><span class="nav-en">Projects</span></a>
+        <a class="nav-link" href="#stub" data-stub="足迹"><span class="nav-label">足迹</span><span class="nav-en">Footprint</span></a>
+        <a class="nav-link" href="#photos" data-page="photos"><span class="nav-label">影像</span><span class="nav-en">Photography</span></a>
+      </nav>
+
+      <a class="nav-cta" href="#resume" data-page="resume"><span class="cn">简历</span><span class="en">Résumé</span></a>
+
+      <button class="menu-btn" type="button" aria-expanded="false" aria-controls="mobile-nav">
+        <span class="menu-lines" aria-hidden="true"><i></i><i></i></span>
+        <span class="sr-only">打开导航</span>
+      </button>
+    </div>
+
+    <div class="mobile-nav" id="mobile-nav" hidden>
+      <a class="mobile-link" href="#stub" data-stub="知识空间"><span>知识空间</span><span class="en">Knowledge</span></a>
+      <a class="mobile-link" href="#stub" data-stub="作品"><span>作品</span><span class="en">Projects</span></a>
+      <a class="mobile-link" href="#photos" data-page="photos"><span>影像</span><span class="en">Photography</span></a>
+      <a class="mobile-link cta" href="#resume" data-page="resume"><span>简历</span><span class="en">Résumé</span></a>
+    </div>
+  </header>
+
+  <main>
+    <!-- ============================ 简历 ============================ -->
+    <article class="page" id="page-resume">
+      <div class="wrap">
+        <header class="r-head page-head">
+          <div>
+            <div class="eyebrow" data-reveal>Résumé · 合肥 · UTC+8</div>
+            <h1 class="r-name" data-reveal data-reveal-delay="60">Sichen Wang</h1>
+            <p class="r-headline" data-reveal data-reveal-delay="110">前端与桌面应用开发 · 本地优先 · 可验证</p>
+            <p class="r-sign" data-reveal data-reveal-delay="160">wangsichen222@outlook.com · github.com/wangsichen222 · wangsichen222.github.io</p>
+          </div>
+          <div class="r-actions no-print" data-reveal data-reveal-delay="200">
+            <button type="button" class="btn-print" id="btn-print">打印 / 存 PDF <span aria-hidden="true">⎙</span></button>
+            <a class="btn-ghost" href="#stub" data-stub="GitHub">GitHub ↗</a>
+          </div>
+        </header>
+
+        <div class="resume-grid">
+          <div>
+            <section class="section">
+              <div class="section-head" data-reveal>
+                <h2 class="section-title"><span class="idx">01</span>摘要</h2>
+                <span class="micro mono faint">SUMMARY</span>
+              </div>
+              <p class="page-lede" style="margin-top:18px" data-reveal>
+                我在合肥写前端与桌面应用，主力栈是 Electron + React + TypeScript，站点与工具链走 Astro 全静态。
+                偏好把状态与结论写下来：架构文档逐条标 <span class="mono">file:line</span>，回归用例串成一条命令，踩过的坑连根写进笔记。
+                现在做的事情是让用户的数据先落在自己机器上，云盘只当同步通道。
+              </p>
+            </section>
+
+            <section class="section">
+              <div class="section-head" data-reveal>
+                <h2 class="section-title"><span class="idx">02</span>核心能力</h2>
+                <a class="arrow-link" href="#stub" data-stub="知识空间">证据都在笔记里 <span class="arw">→</span></a>
+              </div>
+
+              <div class="strength" data-reveal>
+                <span class="n">01</span>
+                <div>
+                  <h3>桌面应用的落盘时序</h3>
+                  <p class="claim">主/渲染分层，回填完成前一律丢弃写库请求；写盘走 <span class="mono">.tmp</span> + 同卷 rename 原子替换。半截 JSON 不会被误判成「本机为空」推上云端。</p>
+                  <a class="proof" href="#stub" data-stub="笔记">↳ 证据 · 笔记《原子写与 ready 闸门》</a>
+                </div>
+              </div>
+
+              <div class="strength" data-reveal>
+                <span class="n">02</span>
+                <div>
+                  <h3>按真机语义实现协议，而不是按文档常识</h3>
+                  <p class="claim">坚果云用 409 表示路径不存在，也不是 404。目录逐级 MKCOL，连接自检用 PROPFIND 定位缺在哪一层，提示里直接给出该层实际有哪些目录。</p>
+                  <a class="proof" href="#stub" data-stub="笔记">↳ 证据 · 笔记《坚果云用 409 表示路径不存在》</a>
+                </div>
+              </div>
+
+              <div class="strength" data-reveal>
+                <span class="n">03</span>
+                <div>
+                  <h3>把「我以为的行为」变成「跑一次就知道的行为」</h3>
+                  <p class="claim">backup / stats / webdav / todo / persistence / config 六套回归串成一条命令，mock 服务验证协议语义，pre-commit 据此把关，不触碰真实账号。</p>
+                  <a class="proof" href="#stub" data-stub="笔记">↳ 证据 · 笔记《六套回归，串成一条命令》</a>
+                </div>
+              </div>
+
+              <div class="strength" data-reveal>
+                <span class="n">04</span>
+                <div>
+                  <h3>内容工程：Markdown 即数据源</h3>
+                  <p class="claim">内容集合 + zod 校验 frontmatter，编译期解析 <span class="mono">[[双链]]</span> 生成反链与图谱节点，零运行时数据库、零第三方请求。</p>
+                  <a class="proof" href="#stub" data-stub="笔记">↳ 证据 · 本站源码与《知识花园需要链接》</a>
+                </div>
+              </div>
+            </section>
+
+            <section class="section">
+              <div class="section-head" data-reveal>
+                <h2 class="section-title"><span class="idx">03</span>经历</h2>
+                <span class="micro mono faint">EXPERIENCE</span>
+              </div>
+
+              <article class="exp" data-reveal>
+                <div class="exp-when"><time>2026.10</time> — 至今</div>
+                <div>
+                  <h3 class="exp-role">独立开发 · 桌面应用</h3>
+                  <p class="exp-org">DayMark <span class="loc">/ 打卡 · 待办 · 日程 / v1.1.4</span></p>
+                  <ul>
+                    <li>三件事合进一个窗口，同步走坚果云 WebDAV，不依赖自建服务端。</li>
+                    <li>冲突决策抽成纯函数 planPull / planPush，主进程只执行动作；覆盖前先各留一份档。</li>
+                    <li>六套回归用例作为提交闸门，回归期间零真实账号写入。</li>
+                  </ul>
+                  <div class="stack"><span class="chip">Electron 44</span><span class="chip">React 18</span><span class="chip">WebDAV</span><span class="chip">safeStorage</span></div>
+                </div>
+              </article>
+
+              <article class="exp" data-reveal>
+                <div class="exp-when"><time>2026.10</time> — 至今</div>
+                <div>
+                  <h3 class="exp-role">站点与知识系统</h3>
+                  <p class="exp-org">个人知识空间 <span class="loc">/ wangsichen222.github.io</span></p>
+                  <ul>
+                    <li>Astro 5 全静态：8 个页面、13 篇笔记、双向链接与力导向图谱。</li>
+                    <li>数据足迹由 GitHub API 构建前落盘，页面运行时不发请求。</li>
+                    <li>GitHub Actions 一条流水线：刷新数据 → 构建 → 发布 Pages。</li>
+                  </ul>
+                  <div class="stack"><span class="chip">Astro 5</span><span class="chip">TypeScript</span><span class="chip">Canvas</span><span class="chip">Actions</span></div>
+                </div>
+              </article>
+
+              <article class="exp is-todo" data-reveal>
+                <span class="todo-tag">待填 · 未编造</span>
+                <h3 class="exp-role">工作经历 / 实习经历</h3>
+                <p>原型里没有放任何机构、职位与时间。落地时在 <span class="mono">resume.experience[]</span> 里按倒序补，字段：<span class="mono">org / role / from / to / location / bullets[]</span>，成果写动作与结果，不写形容词。</p>
+              </article>
+            </section>
+
+          </div>
+
+          <aside class="resume-aside">
+            <div class="card" data-reveal>
+              <div class="card-head"><span>CONTACT CARD</span><span class="no">NO. 001</span></div>
+              <dl class="card-rows">
+                <div class="card-row"><dt>邮件</dt><dd><a class="link-quiet" href="#stub" data-stub="邮件">wangsichen222@outlook.com</a></dd></div>
+                <div class="card-row"><dt>GitHub</dt><dd><a class="link-quiet" href="#stub" data-stub="GitHub">wangsichen222</a></dd></div>
+                <div class="card-row"><dt>站点</dt><dd><a class="link-quiet" href="#stub" data-stub="站点">wangsichen222.github.io</a></dd></div>
+                <div class="card-row"><dt>城市</dt><dd>合肥 · CN</dd></div>
+                <div class="card-row"><dt>角色</dt><dd>前端 / 桌面应用开发</dd></div>
+                <div class="card-row"><dt>可到岗</dt><dd class="faint">待填</dd></div>
+              </dl>
+              <div class="card-foot"><span class="pulse" aria-hidden="true"></span><span>updated · 2026.10.20</span></div>
+            </div>
+
+            <section class="section" style="padding-block:0" data-reveal>
+              <div class="section-head">
+                <h2 class="section-title"><span class="idx">04</span>技术栈</h2>
+              </div>
+              <div style="margin-top:6px">
+                <div class="stack-group">
+                  <span class="g">语言</span>
+                  <div class="stack-items">
+                    <span class="skill" data-tier="primary">TypeScript<span class="tier">主力</span></span>
+                    <span class="skill" data-tier="frequent">JavaScript<span class="tier">常用</span></span>
+                    <span class="skill" data-tier="primary">CSS<span class="tier">主力</span></span>
+                    <span class="skill" data-tier="frequent">Node 脚本<span class="tier">常用</span></span>
+                  </div>
+                </div>
+                <div class="stack-group">
+                  <span class="g">前端桌面</span>
+                  <div class="stack-items">
+                    <span class="skill" data-tier="primary">Electron<span class="tier">主力</span></span>
+                    <span class="skill" data-tier="primary">React<span class="tier">主力</span></span>
+                    <span class="skill" data-tier="primary">Astro<span class="tier">主力</span></span>
+                    <span class="skill" data-tier="frequent">Vite<span class="tier">常用</span></span>
+                    <span class="skill" data-tier="frequent">Canvas 2D<span class="tier">常用</span></span>
+                  </div>
+                </div>
+                <div class="stack-group">
+                  <span class="g">协议数据</span>
+                  <div class="stack-items">
+                    <span class="skill" data-tier="primary">WebDAV / HTTP<span class="tier">主力</span></span>
+                    <span class="skill" data-tier="primary">原子写与快照<span class="tier">主力</span></span>
+                    <span class="skill" data-tier="frequent">frontmatter / zod<span class="tier">常用</span></span>
+                  </div>
+                </div>
+                <div class="stack-group">
+                  <span class="g">工程交付</span>
+                  <div class="stack-items">
+                    <span class="skill" data-tier="primary">Git 与提交规范<span class="tier">主力</span></span>
+                    <span class="skill" data-tier="frequent">GitHub Actions<span class="tier">常用</span></span>
+                    <span class="skill" data-tier="frequent">回归与 mock 服务<span class="tier">常用</span></span>
+                    <span class="skill" data-tier="familiar">Mermaid / Structurizr<span class="tier">了解</span></span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="section" style="padding-block:0" data-reveal>
+              <div class="section-head">
+                <h2 class="section-title"><span class="idx">05</span>其他</h2>
+              </div>
+              <div class="extras" style="margin-top:14px">
+                <div class="extra"><span class="k">写作</span><span class="v">13 篇工程笔记 <a href="#stub" data-stub="知识空间">→</a></span></div>
+                <div class="extra"><span class="k">影像</span><span class="v">6 帧 <a href="#photos">→</a></span></div>
+                <div class="extra is-todo"><span class="k">语言</span><span class="v">待填</span></div>
+                <div class="extra is-todo"><span class="k">认证</span><span class="v">待填</span></div>
+              </div>
+            </section>
+          </aside>
+        </div>
+
+        <section class="section">
+          <div class="section-head" data-reveal>
+            <h2 class="section-title"><span class="idx">06</span>代表项目</h2>
+            <a class="arrow-link" href="#stub" data-stub="作品">全部作品 <span class="arw">→</span></a>
+          </div>
+
+          <article class="proj" data-reveal>
+            <div>
+              <div class="proj-name"><h3>DayMark</h3><span class="zh">每日打卡 · 待办 · 日程</span></div>
+              <p class="proj-tag">一个本地优先的桌面应用，数据先落在自己机器上，云盘只是同步通道。</p>
+              <ul>
+                <li><b>落盘时序反转</b>：回填完成前丢弃所有写库请求，避免空库上云。</li>
+                <li><b>冲突先留档</b>：动手前本机与云端各存一份，再决定覆盖方向。</li>
+              </ul>
+            </div>
+            <div class="proj-side">
+              <div><div class="proj-metric">6 套</div><div class="proj-metric-l">回归用例</div></div>
+              <span class="chip">持续开发</span>
+            </div>
+          </article>
+
+          <article class="proj" data-reveal>
+            <div>
+              <div class="proj-name"><h3>Personal Space</h3><span class="zh">个人知识空间</span></div>
+              <p class="proj-tag">知识应该自己长成网络，而不是堆成列表。</p>
+              <ul>
+                <li><b>内容即仓库</b>：一篇一个 Markdown，push 即发布，历史即版本。</li>
+                <li><b>足迹不手填</b>：热力图、时段分布与活跃天数全部由真实提交算出。</li>
+              </ul>
+            </div>
+            <div class="proj-side">
+              <div><div class="proj-metric">0</div><div class="proj-metric-l">运行时依赖</div></div>
+              <span class="chip">运行中</span>
+            </div>
+          </article>
+
+          <article class="proj" data-reveal>
+            <div>
+              <div class="proj-name"><h3>DayMark Docs</h3><span class="zh">架构说明与边界记录</span></div>
+              <p class="proj-tag">文档不是结论的复述，而是结论的可核对来源。</p>
+              <ul>
+                <li><b>逐条 file:line</b>：三篇架构说明标注到具体代码位置。</li>
+                <li><b>已知差异单列</b>：文档与代码冲突处照实写下，以代码为准。</li>
+              </ul>
+            </div>
+            <div class="proj-side">
+              <div><div class="proj-metric">3 篇</div><div class="proj-metric-l">篇幅</div></div>
+              <span class="chip">随代码演进</span>
+            </div>
+          </article>
+        </section>
+
+        <div class="r-foot">
+          <span>最后更新 2026.10.20</span>
+          <span>项目与提交数据与 /footprint/ 同源 · 打印为 A4 两页内</span>
+        </div>
+      </div>
+    </article>
+
+    <!-- ============================ 影像 ============================ -->
+    <article class="page" id="page-photos" hidden>
+      <div class="wrap">
+        <div class="photos-top">
+          <header class="page-head">
+            <div class="eyebrow" data-reveal>Photography · 2024 — 2026</div>
+            <h1 class="page-title" data-reveal data-reveal-delay="60">看过的地方，<br />留下来的比例。</h1>
+            <p class="page-lede" data-reveal data-reveal-delay="110">
+              摄影是我给自己留的另一种记录方式：不写结论，只留下当时站在那里看到的光和比例。
+              大部分在城市里拍，等雨、等雾、等一个没人的路口。
+            </p>
+            <div class="page-meta" data-reveal data-reveal-delay="150">
+              <span id="meta-count">6 帧</span><span id="meta-series">4 个系列</span><span>最近一帧 2026.03</span><span>演示数据</span>
+            </div>
+            <div class="filters" role="group" aria-label="按系列筛选" data-reveal data-reveal-delay="180">
+              <span class="lab">Series</span>
+              <div id="chips" style="display:contents"></div>
+            </div>
+            <p class="count" id="filter-count" aria-live="polite">显示全部 6 帧</p>
+          </header>
+
+          <aside style="padding-top:clamp(44px,7vw,84px)">
+            <div class="card" data-reveal data-reveal-delay="140">
+              <div class="card-head"><span>GEAR &amp; RULES</span><span class="no">DEMO</span></div>
+              <dl class="card-rows">
+                <div class="card-row"><dt>机身</dt><dd class="faint">待填</dd></div>
+                <div class="card-row"><dt>镜头</dt><dd class="faint">待填</dd></div>
+                <div class="card-row"><dt>后期</dt><dd>曝光与色调，不做合成</dd></div>
+                <div class="card-row"><dt>帧数</dt><dd class="num" id="card-frames">6</dd></div>
+                <div class="card-row"><dt>许可</dt><dd>署名 · 禁止商用</dd></div>
+              </dl>
+              <div class="card-foot"><span class="pulse" aria-hidden="true"></span><span>GPS 已在构建期剥离</span></div>
+            </div>
+          </aside>
+        </div>
+
+        <section class="section" style="padding-top:clamp(26px,4vw,44px)">
+          <div class="stage" id="stage" tabindex="-1" role="region" aria-label="大图查看" hidden>
+            <div class="stage-img"><img id="stage-img" src="assets/demo-city-night-lg.jpg" alt="" width="1400" height="933" /></div>
+            <aside class="stage-panel">
+              <div class="eyebrow" id="stage-series">城市</div>
+              <h3 id="stage-title">—</h3>
+              <p class="cap" id="stage-caption">—</p>
+              <dl class="exif" id="stage-exif"></dl>
+              <div class="stage-nav">
+                <button type="button" id="stage-prev">← 上一帧</button>
+                <button type="button" id="stage-next">下一帧 →</button>
+                <button type="button" id="stage-close">关闭 (Esc)</button>
+              </div>
+              <p class="stage-rights">© 2026 Sichen Wang · 演示图，替换真图后此行为许可声明</p>
+            </aside>
+          </div>
+
+          <div class="photo-grid" id="grid"></div>
+          <p class="empty" id="empty" hidden>这个系列还没有公开帧。<button type="button" class="chip" id="empty-reset" style="margin-left:10px">看全部</button></p>
+        </section>
+
+        <div class="r-foot">
+          <span>图片为 AI 生成的演示帧 · EXIF 与地点同为演示值</span>
+          <span>替换约定见 docs/design/resume-and-photography.md §3.6</span>
+        </div>
+      </div>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <div class="foot-grid">
+        <div class="col identity">
+          <div class="foot-name">Sichen Wang</div>
+          <p class="foot-tag">把能长期运行的东西，一件一件做出来。</p>
+        </div>
+        <div class="col">
+          <div class="foot-label">站点</div>
+          <ul class="foot-list">
+            <li><a class="link-quiet" href="#stub" data-stub="知识空间">知识空间</a></li>
+            <li><a class="link-quiet" href="#stub" data-stub="作品">作品</a></li>
+            <li><a class="link-quiet" href="#photos">影像</a></li>
+            <li><a class="link-quiet" href="#resume">简历</a></li>
+          </ul>
+        </div>
+        <div class="col">
+          <div class="foot-label">连接</div>
+          <ul class="foot-list">
+            <li><a class="link-quiet" href="#stub" data-stub="GitHub">GitHub ↗</a></li>
+            <li><a class="link-quiet" href="#stub" data-stub="邮件">邮件</a></li>
+            <li><a class="link-quiet" href="#stub" data-stub="RSS">RSS</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="foot-bottom">
+        <span>© 2026 Sichen Wang</span><span class="faint">·</span>
+        <span>Astro 静态构建</span><span class="faint">·</span>
+        <span>GitHub Pages 托管</span>
+        <span class="spacer"></span>
+        <span class="dim">合肥, CN</span>
+      </div>
+    </div>
+  </footer>
+
+  <div id="toast" role="status" aria-live="polite" style="position:absolute;left:50%;bottom:26px;transform:translateY(14px);opacity:0;pointer-events:none;padding:9px 16px;border:1px solid var(--brass-line);border-radius:99px;background:rgba(8,9,10,.92);font-family:var(--font-mono);font-size:.66rem;letter-spacing:.1em;color:var(--paper-dim);transition:opacity .3s var(--ease),transform .3s var(--ease);z-index:120"></div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ---------- 数据：字段与 src/content/photos/*.md 的 frontmatter 一一对应 ---------- */
+  var PHOTOS = [
+    { slug: '2026-rain-street', title: '雨把霓虹摊开', series: '街边', location: '合肥 · 淮河路',
+      capturedAt: '2026-02-21', ratio: '4:5', alt: '雨夜人行道上，一把黑伞的背影走在湿漉漉的路面旁，店铺霓虹在积水里拉成黄色与青色的长条',
+      caption: '等了三个红灯，路面反光刚好处在最亮的时候。竖构图把伞和倒影留在同一格里。',
+      exif: { camera: 'DEMO body', lens: '35mm', focal: '35mm', aperture: 'f/1.8', shutter: '1/125', iso: 1600 },
+      thumb: 'assets/demo-rain-street.jpg', full: 'assets/demo-rain-street-lg.jpg', w: 640, h: 800, featured: false },
+
+    { slug: '2026-city-night', title: '高架上的二十秒', series: '城市', location: '合肥 · 人行天桥',
+      capturedAt: '2026-03-14', ratio: '3:2', alt: '从天桥俯拍的城市夜景，车流拉成红白光带，远处住宅楼亮着成排的暖色窗格',
+      caption: '二十秒是为了让光带断成几段。三脚架架在栏杆上，风大，快门线不敢松。',
+      exif: { camera: 'DEMO body', lens: '35mm', focal: '35mm', aperture: 'f/8', shutter: '20s', iso: 100 },
+      thumb: 'assets/demo-city-night.jpg', full: 'assets/demo-city-night-lg.jpg', w: 640, h: 427, featured: true },
+
+    { slug: '2025-mountain-fog', title: '松谷的第七层雾', series: '自然', location: '黄山 · 松谷',
+      capturedAt: '2025-04-19', ratio: '2:3', alt: '浓雾中的山脊层层叠叠，前景松树呈深灰剪影，越远越浅直到与天空同色',
+      caption: '雾在退，每退一层就按一次。第七层的时候我决定收工。',
+      exif: { camera: 'DEMO body', lens: '85mm', focal: '85mm', aperture: 'f/4', shutter: '1/250', iso: 400 },
+      thumb: 'assets/demo-mountain-fog.jpg', full: 'assets/demo-mountain-fog-lg.jpg', w: 640, h: 960, featured: false },
+
+    { slug: '2025-harbor-dusk', title: '码头退潮', series: '城市', location: '芜湖 · 江边码头',
+      capturedAt: '2025-11-02', ratio: '3:2', alt: '黄昏的江边码头，龙门吊与驳船成为剪影，低太阳在水面拉出一条橙金色反光',
+      caption: '门吊已经不用了很多年。太阳落到它两腿之间的时候，我按了两张。',
+      exif: { camera: 'DEMO body', lens: '50mm', focal: '50mm', aperture: 'f/5.6', shutter: '1/60', iso: 200 },
+      thumb: 'assets/demo-harbor-dusk.jpg', full: 'assets/demo-harbor-dusk-lg.jpg', w: 640, h: 427, featured: false },
+
+    { slug: '2025-stair-geometry', title: '旋转的第十二圈', series: '建筑', location: '合肥 · 图书馆中庭',
+      capturedAt: '2025-09-28', ratio: '1:1', alt: '从上往下俯拍的空旷混凝土旋转楼梯，同心弧线被斜射的日光切成明暗交替的条纹',
+      caption: '正方形是这张唯一合理的比例：任何一边被裁掉，圈就不完整了。',
+      exif: { camera: 'DEMO body', lens: '24mm', focal: '24mm', aperture: 'f/2.8', shutter: '1/80', iso: 800 },
+      thumb: 'assets/demo-stair-geometry.jpg', full: 'assets/demo-stair-geometry-lg.jpg', w: 640, h: 640, featured: false },
+
+    { slug: '2026-snow-tree', title: '一棵树的位置', series: '自然', location: '合肥 · 塘西河',
+      capturedAt: '2026-01-07', ratio: '5:4', alt: '雪后空旷的河滩上只有一棵落光叶子的树，白色天空与雪地之间留下淡蓝色阴影',
+      caption: '雪把一切都减掉了，只剩一个点和它的坐标。',
+      exif: { camera: 'DEMO body', lens: '105mm', focal: '105mm', aperture: 'f/7.1', shutter: '1/400', iso: 100 },
+      thumb: 'assets/demo-snow-tree.jpg', full: 'assets/demo-snow-tree-lg.jpg', w: 640, h: 512, featured: false }
+  ];
+
+  var RATIO = { '3:2': 1.5, '2:3': 0.6667, '1:1': 1, '4:5': 0.8, '5:4': 1.25 };
+  var SERIES_ORDER = ['城市', '自然', '建筑', '街边'];
+
+  var root = document.getElementById('pp-root');
+  var pages = { resume: document.getElementById('page-resume'), photos: document.getElementById('page-photos') };
+  var grid = document.getElementById('grid');
+  var chipsBox = document.getElementById('chips');
+  var filterCount = document.getElementById('filter-count');
+  var empty = document.getElementById('empty');
+  var stage = document.getElementById('stage');
+  var stageImg = document.getElementById('stage-img');
+  var stageTitle = document.getElementById('stage-title');
+  var stageSeries = document.getElementById('stage-series');
+  var stageCaption = document.getElementById('stage-caption');
+  var stageExif = document.getElementById('stage-exif');
+  var toast = document.getElementById('toast');
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var current = null;      // 当前 stage 展示的 photo
+  var currentList = PHOTOS;
+  var lastCell = null;
+  var activeSeries = '全部';
+
+  /* ---------- 小工具 ---------- */
+  var toastTimer = null;
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.style.opacity = '1';
+    toast.style.transform = 'translateY(0)';
+    if (toastTimer) window.clearTimeout(toastTimer);
+    toastTimer = window.setTimeout(function () {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateY(14px)';
+    }, 1800);
+  }
+
+  function ratioOf(p) { return RATIO[p.ratio] || 1.5; }
+
+  /* ---------- 路由：#resume / #photos / #photos/<slug> ---------- */
+  function route() {
+    var hash = window.location.hash.replace(/^#/, '');
+    var page = 'resume';
+    var slug = '';
+    if (hash.indexOf('photos/') === 0) { page = 'photos'; slug = hash.slice('photos/'.length); }
+    else if (hash.indexOf('photos') === 0) { page = 'photos'; }
+
+    pages.resume.hidden = page !== 'resume';
+    pages.photos.hidden = page !== 'photos';
+
+    var links = document.querySelectorAll('[data-page]');
+    for (var i = 0; i < links.length; i++) {
+      links[i].classList.toggle('active', links[i].getAttribute('data-page') === page);
+    }
+    var stubs = document.querySelectorAll('[data-stub]');
+    for (var j = 0; j < stubs.length; j++) {
+      if (stubs[j].classList.contains('nav-link')) {
+        stubs[j].classList.toggle('active', stubs[j].getAttribute('data-stub') === '影像');
+      }
+    }
+
+    if (page === 'photos' && slug) {
+      var hit = null;
+      for (var k = 0; k < PHOTOS.length; k++) if (PHOTOS[k].slug === slug) hit = PHOTOS[k];
+      if (hit) openStage(hit, null, false); else closeStage(false);
+    } else if (page === 'photos') {
+      closeStage(false);
+    }
+    reveal(page);
+  }
+
+  /* ---------- 减动效揭示 ---------- */
+  var revealed = { resume: false, photos: false };
+  function reveal(page) {
+    if (revealed[page]) return;
+    revealed[page] = true;
+    var scope = pages[page];
+    var targets = scope.querySelectorAll('[data-reveal]');
+    if (reduced || !('IntersectionObserver' in window)) {
+      for (var i = 0; i < targets.length; i++) targets[i].classList.add('is-in');
+      return;
+    }
+    var io = new IntersectionObserver(function (entries) {
+      for (var e = 0; e < entries.length; e++) {
+        if (!entries[e].isIntersecting) continue;
+        var el = entries[e].target;
+        el.style.animationDelay = (el.getAttribute('data-reveal-delay') || 0) + 'ms';
+        el.classList.add('is-in');
+        io.unobserve(el);
+      }
+    }, { threshold: 0.06, rootMargin: '0px 0px -30px 0px' });
+    for (var t = 0; t < targets.length; t++) io.observe(targets[t]);
+  }
+
+  /* ---------- 影像：筛选 chips ---------- */
+  function buildChips() {
+    var counts = { 全部: PHOTOS.length };
+    for (var i = 0; i < PHOTOS.length; i++) {
+      var s = PHOTOS[i].series;
+      counts[s] = (counts[s] || 0) + 1;
+    }
+    var order = ['全部'].concat(SERIES_ORDER.filter(function (s) { return counts[s]; }));
+    chipsBox.innerHTML = '';
+    order.forEach(function (label) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'chip';
+      b.setAttribute('aria-pressed', label === activeSeries ? 'true' : 'false');
+      b.setAttribute('data-series', label);
+      b.innerHTML = label + ' <span class="c">' + (counts[label] || 0) + '</span>';
+      b.addEventListener('click', function () { applyFilter(label); });
+      chipsBox.appendChild(b);
+    });
+  }
+
+  function applyFilter(label) {
+    activeSeries = label;
+    currentList = label === '全部' ? PHOTOS : PHOTOS.filter(function (p) { return p.series === label; });
+    var chips = chipsBox.querySelectorAll('.chip');
+    for (var i = 0; i < chips.length; i++) {
+      chips[i].setAttribute('aria-pressed', chips[i].getAttribute('data-series') === label ? 'true' : 'false');
+    }
+    renderGrid();
+    filterCount.textContent = label === '全部'
+      ? '显示全部 ' + currentList.length + ' 帧'
+      : '系列「' + label + '」· ' + currentList.length + ' 帧';
+    empty.hidden = currentList.length !== 0;
+    if (current && currentList.indexOf(current) === -1) closeStage(false);
+  }
+
+  /* ---------- 影像：网格 ---------- */
+  function renderGrid() {
+    grid.innerHTML = '';
+    currentList.forEach(function (p, index) {
+      var cell = document.createElement('button');
+      cell.type = 'button';
+      cell.className = 'photo-cell';
+      cell.style.setProperty('--r', String(ratioOf(p)));
+      cell.setAttribute('data-slug', p.slug);
+      cell.setAttribute('aria-label', p.title + ' · ' + p.series + ' · ' + p.location + ' · ' + p.capturedAt.slice(0, 4));
+      if (p.featured) cell.setAttribute('data-feature', '1');
+      cell.setAttribute('aria-expanded', current && current.slug === p.slug ? 'true' : 'false');
+
+      var img = document.createElement('img');
+      img.src = p.thumb; img.width = p.w; img.height = p.h; img.alt = p.alt;
+      img.loading = index < 4 ? 'eager' : 'lazy';
+      img.decoding = 'async';
+
+      var meta = document.createElement('span');
+      meta.className = 'cell-meta';
+      var t = document.createElement('span'); t.className = 't'; t.textContent = p.title;
+      var x = document.createElement('span'); x.className = 'x';
+      x.textContent = p.exif.focal + ' ' + p.exif.aperture;
+      meta.appendChild(t); meta.appendChild(x);
+
+      cell.appendChild(img); cell.appendChild(meta);
+      if (p.featured) {
+        var badge = document.createElement('span');
+        badge.className = 'cell-badge'; badge.textContent = '精选';
+        cell.appendChild(badge);
+      }
+      cell.addEventListener('click', function () { openStage(p, cell, true); });
+      grid.appendChild(cell);
+    });
+  }
+
+  /* ---------- 影像：stage ---------- */
+  function exifRows(p) {
+    var pairs = [
+      ['机身', p.exif.camera], ['镜头', p.exif.lens], ['焦距', p.exif.focal],
+      ['光圈', p.exif.aperture], ['快门', p.exif.shutter], ['ISO', String(p.exif.iso)],
+      ['地点', p.location], ['拍摄', p.capturedAt.replace(/-/g, '.')]
+    ];
+    stageExif.innerHTML = '';
+    pairs.forEach(function (pair) {
+      var row = document.createElement('div');
+      var dt = document.createElement('dt'); dt.textContent = pair[0];
+      var dd = document.createElement('dd'); dd.textContent = pair[1];
+      row.appendChild(dt); row.appendChild(dd);
+      stageExif.appendChild(row);
+    });
+  }
+
+  function openStage(p, cell, pushHash) {
+    current = p;
+    stage.hidden = false;
+    stageImg.src = p.full;
+    stageImg.alt = p.alt;
+    stageTitle.textContent = p.title;
+    stageSeries.textContent = p.series + ' · ' + p.location;
+    stageCaption.textContent = p.caption;
+    exifRows(p);
+    var cells = grid.querySelectorAll('.photo-cell');
+    for (var i = 0; i < cells.length; i++) {
+      cells[i].setAttribute('aria-expanded', cells[i].getAttribute('data-slug') === p.slug ? 'true' : 'false');
+    }
+    lastCell = cell || null;
+    if (pushHash) {
+      var want = '#photos/' + p.slug;
+      if (window.location.hash !== want) {
+        history.replaceState(null, '', want);
+      }
+    }
+    stage.focus();
+    if (!reduced) stage.scrollIntoView({ block: 'start' });
+  }
+
+  function closeStage(returnFocus) {
+    current = null;
+    stage.hidden = true;
+    var cells = grid.querySelectorAll('.photo-cell');
+    for (var i = 0; i < cells.length; i++) cells[i].setAttribute('aria-expanded', 'false');
+    if (returnFocus && lastCell) lastCell.focus();
+    if (window.location.hash.indexOf('#photos/') === 0) history.replaceState(null, '', '#photos');
+    lastCell = null;
+  }
+
+  function step(dir) {
+    if (!current) return;
+    var idx = currentList.indexOf(current);
+    if (idx === -1) idx = 0;
+    var next = currentList[(idx + dir + currentList.length) % currentList.length];
+    var cell = grid.querySelector('[data-slug="' + next.slug + '"]');
+    openStage(next, cell, true);
+  }
+
+  document.getElementById('stage-prev').addEventListener('click', function () { step(-1); });
+  document.getElementById('stage-next').addEventListener('click', function () { step(1); });
+  document.getElementById('stage-close').addEventListener('click', function () { closeStage(true); });
+  document.getElementById('empty-reset').addEventListener('click', function () { applyFilter('全部'); });
+
+  document.addEventListener('keydown', function (ev) {
+    if (pages.photos.hidden || stage.hidden) return;
+    if (ev.key === 'ArrowLeft') { ev.preventDefault(); step(-1); }
+    else if (ev.key === 'ArrowRight') { ev.preventDefault(); step(1); }
+    else if (ev.key === 'Escape') { ev.preventDefault(); closeStage(true); }
+  });
+
+  /* ---------- 计数与元信息 ---------- */
+  (function initMeta() {
+    var series = {};
+    for (var i = 0; i < PHOTOS.length; i++) series[PHOTOS[i].series] = 1;
+    var n = Object.keys(series).length;
+    document.getElementById('meta-count').textContent = PHOTOS.length + ' 帧';
+    document.getElementById('meta-series').textContent = n + ' 个系列';
+    document.getElementById('card-frames').textContent = String(PHOTOS.length);
+  })();
+
+  /* ---------- 原型工具条 ---------- */
+  var printPreviewOn = false;
+  var btnPreview = document.getElementById('btn-print-preview');
+  btnPreview.addEventListener('click', function () {
+    var on = root.classList.toggle('is-print');
+    printPreviewOn = on;
+    btnPreview.setAttribute('aria-pressed', on ? 'true' : 'false');
+    showToast(on ? '打印版预览：白底令牌反转，导航与按钮已隐去' : '回到屏显深色版');
+  });
+
+  var btnMotion = document.getElementById('btn-motion');
+  btnMotion.addEventListener('click', function () {
+    reduced = !reduced;
+    btnMotion.setAttribute('aria-pressed', reduced ? 'true' : 'false');
+    root.style.setProperty('--ease', 'linear');
+    var all = root.querySelectorAll('[data-reveal]');
+    if (reduced) { for (var i = 0; i < all.length; i++) all[i].classList.add('is-in'); }
+    showToast(reduced ? '减动效：所有元素直接终态' : '动效已恢复');
+  });
+
+  var btnPrint = document.getElementById('btn-print');
+  btnPrint.addEventListener('click', function () {
+    if (pages.photos.hidden === false && pages.resume.hidden) { showToast('请先切到简历页再打印'); return; }
+    try { window.print(); } catch (e) { showToast('当前环境不允许调起打印，请用浏览器菜单打印'); }
+  });
+
+  /* ---------- 未包含页面的链接：明确告知而不是静默失败 ---------- */
+  var stubLinks = document.querySelectorAll('[data-stub]');
+  for (var s = 0; s < stubLinks.length; s++) {
+    stubLinks[s].addEventListener('click', function (ev) {
+      ev.preventDefault();
+      showToast('原型只包含「简历」与「影像」· ' + this.getAttribute('data-stub') + ' 属于现有站点');
+    });
+  }
+
+  /* ---------- 移动端抽屉 ---------- */
+  var menuBtn = document.querySelector('.menu-btn');
+  var panel = document.getElementById('mobile-nav');
+  menuBtn.addEventListener('click', function () {
+    var open = menuBtn.getAttribute('aria-expanded') === 'true';
+    menuBtn.setAttribute('aria-expanded', String(!open));
+    panel.hidden = open;
+  });
+  var drawerLinks = panel.querySelectorAll('a');
+  for (var d = 0; d < drawerLinks.length; d++) {
+    drawerLinks[d].addEventListener('click', function () {
+      menuBtn.setAttribute('aria-expanded', 'false');
+      panel.hidden = true;
+    });
+  }
+
+  window.addEventListener('beforeprint', function () { root.classList.add('is-print'); });
+  window.addEventListener('afterprint', function () {
+    if (!printPreviewOn) root.classList.remove('is-print');
+  });
+
+  /* ---------- 启动 ---------- */
+  buildChips();
+  renderGrid();
+  window.addEventListener('hashchange', route);
+  route();
+})();
+</script>
+</body>
+</html>

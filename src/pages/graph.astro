@@ -1,0 +1,248 @@
+---
+import Base from '../layouts/Base.astro';
+import GraphCanvas from '../components/GraphCanvas.astro';
+import { getNotes, buildGraph, noteHref } from '../lib/notes';
+
+const notes = await getNotes();
+const graph = buildGraph(notes);
+const linkCount = graph.links.filter((link) => link.type === 'link').length;
+
+const noteNodes = graph.nodes.filter((node) => node.type === 'note');
+const degreeOf = (id: string) => {
+  const inbound = graph.links.filter((link) => link.type === 'link' && link.target === id).length;
+  const outbound = graph.links.filter((link) => link.type === 'link' && link.source === id).length;
+  return { inbound, outbound, total: inbound + outbound };
+};
+
+const hubs = [...noteNodes]
+  .map((node) => ({ ...node, ...degreeOf(node.id) }))
+  .sort((a, b) => b.total - a.total)
+  .slice(0, 5);
+
+const orphans = noteNodes.filter((node) => degreeOf(node.id).total === 0);
+
+const tagNodes = graph.nodes.filter((node) => node.type === 'tag');
+---
+
+<Base title="知识图谱" description="笔记之间的双向链接构成的知识网络，可拖拽、可点击。">
+  <header class="page-head wrap">
+    <div class="eyebrow" data-reveal>Graph view</div>
+    <h1 class="page-title" data-reveal data-reveal-delay="60">知识图谱</h1>
+    <p class="page-lead" data-reveal data-reveal-delay="100">
+      节点是笔记与标签，连线是引用关系。位置由力导向布局算出，没有人工排版——
+      所以簇的形状反映的是内容之间的真实距离。
+    </p>
+    <div class="head-stats mono" data-reveal data-reveal-delay="140">
+      <span><b>{noteNodes.length}</b> 笔记</span>
+      <span class="sep">·</span>
+      <span><b>{tagNodes.length}</b> 标签</span>
+      <span class="sep">·</span>
+      <span><b>{linkCount}</b> 条双链</span>
+      <span class="sep">·</span>
+      <span>平均度 <b>{(noteNodes.reduce((sum, node) => sum + degreeOf(node.id).total, 0) / Math.max(noteNodes.length, 1)).toFixed(1)}</b></span>
+    </div>
+  </header>
+
+  <section class="wrap">
+    <div data-reveal>
+      <GraphCanvas nodes={graph.nodes} links={graph.links} height={660} />
+    </div>
+    <p class="graph-note mono">
+      布局为编译期生成的静态数据 + 浏览器端力导向模拟，无外部依赖、无网络请求。
+    </p>
+  </section>
+
+  <section class="wrap section-split">
+    <div class="panel" data-reveal>
+      <div class="panel-head">
+        <h2 class="panel-title">枢纽</h2>
+        <span class="mono micro faint">按连接数排序</span>
+      </div>
+      <ol class="hub-list">
+        {hubs.map((hub, index) => (
+          <li>
+            <span class="hub-rank mono">{String(index + 1).padStart(2, '0')}</span>
+            <a class="hub-name" href={noteHref(hub.id)}>{hub.label}</a>
+            <span class="hub-deg mono">{hub.total}</span>
+          </li>
+        ))}
+      </ol>
+      <p class="panel-foot">
+        被引用最多的笔记，通常不是你自以为最关注的主题。
+      </p>
+    </div>
+
+    <div class="panel" data-reveal data-reveal-delay="80">
+      <div class="panel-head">
+        <h2 class="panel-title">孤立节点</h2>
+        <span class="mono micro faint">{orphans.length} 个</span>
+      </div>
+      {orphans.length === 0 ? (
+        <p class="panel-empty">每篇笔记都已经接入网络。</p>
+      ) : (
+        <ul class="orphan-list">
+          {orphans.map((node) => (
+            <li><a href={noteHref(node.id)}>{node.label}</a></li>
+          ))}
+        </ul>
+      )}
+      <p class="panel-foot">
+        没有任何进出的笔记，是最该补链接的地方。
+      </p>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .page-head {
+    padding-block: clamp(48px, 7vw, 88px) clamp(28px, 4vw, 40px);
+  }
+
+  .page-title {
+    margin-top: 18px;
+    font-size: var(--fs-h1);
+  }
+
+  .page-lead {
+    margin-top: 18px;
+    max-width: 64ch;
+    font-size: 0.98rem;
+    line-height: 1.9;
+    color: var(--paper-dim);
+    text-wrap: pretty;
+  }
+
+  .head-stats {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-top: 24px;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    color: var(--paper-faint);
+  }
+
+  .head-stats b {
+    color: var(--paper);
+    font-weight: 500;
+  }
+
+  .sep {
+    opacity: 0.4;
+  }
+
+  .graph-note {
+    margin-top: 14px;
+    font-size: 0.64rem;
+    letter-spacing: 0.06em;
+    color: var(--paper-faint);
+  }
+
+  .section-split {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+    margin-top: clamp(40px, 6vw, 64px);
+  }
+
+  .panel {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 24px 26px 20px;
+    background: rgba(255, 255, 255, 0.012);
+  }
+
+  .panel-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--line-soft);
+  }
+
+  .panel-title {
+    font-size: 1rem;
+  }
+
+  .hub-list {
+    list-style: none;
+    margin-top: 6px;
+  }
+
+  .hub-list li {
+    display: grid;
+    grid-template-columns: 28px minmax(0, 1fr) 32px;
+    gap: 10px;
+    align-items: baseline;
+    padding: 11px 0;
+    border-bottom: 1px dashed var(--line-soft);
+  }
+
+  .hub-rank {
+    font-size: 0.64rem;
+    color: var(--brass);
+    opacity: 0.65;
+  }
+
+  .hub-name {
+    font-size: 0.88rem;
+    color: var(--paper-dim);
+    transition: color 0.2s var(--ease);
+  }
+
+  .hub-name:hover {
+    color: var(--brass);
+  }
+
+  .hub-deg {
+    font-size: 0.7rem;
+    color: var(--paper-faint);
+    text-align: right;
+  }
+
+  .orphan-list {
+    list-style: none;
+    margin-top: 6px;
+  }
+
+  .orphan-list li {
+    padding: 11px 0;
+    border-bottom: 1px dashed var(--line-soft);
+    font-size: 0.88rem;
+  }
+
+  .orphan-list a {
+    color: var(--paper-dim);
+    transition: color 0.2s var(--ease);
+  }
+
+  .orphan-list a:hover {
+    color: var(--brass);
+  }
+
+  .panel-empty {
+    padding: 18px 0;
+    font-size: 0.86rem;
+    color: var(--paper-faint);
+  }
+
+  .panel-foot {
+    margin-top: 16px;
+    font-size: 0.78rem;
+    line-height: 1.7;
+    color: var(--paper-faint);
+  }
+
+  .micro {
+    font-size: 0.64rem;
+    letter-spacing: 0.08em;
+  }
+
+  @media (max-width: 820px) {
+    .section-split {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

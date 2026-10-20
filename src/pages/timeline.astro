@@ -1,0 +1,348 @@
+---
+import Base from '../layouts/Base.astro';
+import { timeline, kindMeta, groupByYear } from '../data/timeline';
+
+const groups = groupByYear(timeline);
+const years = groups.map((group) => group.year);
+const span = `${years.at(-1)} — ${years[0]}`;
+const kinds = Object.entries(kindMeta) as [keyof typeof kindMeta, (typeof kindMeta)[keyof typeof kindMeta]][];
+---
+
+<Base title="时间线" description="按日期排列的记录：里程碑、功能、修复与写作。">
+  <header class="page-head wrap">
+    <div class="eyebrow" data-reveal>Timeline</div>
+    <h1 class="page-title" data-reveal data-reveal-delay="60">时间线</h1>
+    <p class="page-lead" data-reveal data-reveal-delay="100">
+      记录按日期倒序排列，每条都能追到具体的提交或仓库。
+      这里不放计划，只放已经发生的事。
+    </p>
+    <div class="head-stats mono" data-reveal data-reveal-delay="140">
+      <span><b>{timeline.length}</b> 条记录</span>
+      <span class="sep">·</span>
+      <span>{span}</span>
+      <span class="sep">·</span>
+      <span>最近一次 {timeline[0]?.date.replace(/-/g, '.')}</span>
+    </div>
+  </header>
+
+  <section class="wrap">
+    <div class="filters" role="group" aria-label="按类型筛选">
+      <button class="chip is-active" type="button" data-kind="*">全部 <span class="n">{timeline.length}</span></button>
+      {kinds.map(([key, meta]) => {
+        const count = timeline.filter((event) => event.kind === key).length;
+        return (
+          <button class="chip" type="button" data-kind={key}>
+            <i class="kdot" style={`--k:${meta.color}`} aria-hidden="true"></i>
+            {meta.label} <span class="n">{count}</span>
+          </button>
+        );
+      })}
+    </div>
+
+    <div class="timeline" data-timeline>
+      {groups.map((group) => (
+        <section class="year-group" data-year>
+          <div class="year-head">
+            <h2 class="year serif">{group.year}</h2>
+            <span class="year-count mono">{group.items.length} 条</span>
+          </div>
+
+          <ol class="tl-list">
+            {group.items.map((event) => (
+              <li class="tl-item" data-event data-kind={event.kind} data-reveal>
+                <div class="tl-date mono">
+                  <span class="md">{event.date.slice(5).replace('-', '.')}</span>
+                </div>
+
+                <div class="tl-rail">
+                  <span class="tl-dot" style={`--k:${kindMeta[event.kind].color}`}></span>
+                </div>
+
+                <div class="tl-body">
+                  <div class="tl-top">
+                    <span class="tl-kind mono" style={`--k:${kindMeta[event.kind].color}`}>
+                      {kindMeta[event.kind].label}
+                    </span>
+                    {event.tags?.map((tag) => <span class="tl-tag mono">{tag}</span>)}
+                  </div>
+                  <h3 class="tl-title">{event.title}</h3>
+                  <p class="tl-desc">{event.desc}</p>
+                  {event.link && (
+                    <a class="tl-link mono" href={event.link} target="_blank" rel="noreferrer">
+                      {event.linkLabel ?? '查看'} ↗
+                    </a>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ol>
+        </section>
+      ))}
+    </div>
+
+    <p class="tl-foot mono">
+      数据源：src/data/timeline.ts · 新增一条只需加一个对象
+    </p>
+  </section>
+</Base>
+
+<script>
+  const chips = [...document.querySelectorAll<HTMLButtonElement>('[data-kind]')];
+  const items = [...document.querySelectorAll<HTMLElement>('[data-event]')];
+  const groups = [...document.querySelectorAll<HTMLElement>('[data-year]')];
+
+  for (const chip of chips) {
+    chip.addEventListener('click', () => {
+      const kind = chip.dataset.kind ?? '*';
+      chips.forEach((item) => item.classList.toggle('is-active', item === chip));
+
+      for (const item of items) {
+        item.hidden = kind !== '*' && item.dataset.kind !== kind;
+      }
+
+      for (const group of groups) {
+        const visible = [...group.querySelectorAll<HTMLElement>('[data-event]')].some(
+          (item) => !item.hidden
+        );
+        group.hidden = !visible;
+      }
+    });
+  }
+</script>
+
+<style>
+  .page-head {
+    padding-block: clamp(48px, 7vw, 88px) clamp(28px, 4vw, 40px);
+  }
+
+  .page-title {
+    margin-top: 18px;
+    font-size: var(--fs-h1);
+  }
+
+  .page-lead {
+    margin-top: 18px;
+    max-width: 60ch;
+    font-size: 0.98rem;
+    line-height: 1.9;
+    color: var(--paper-dim);
+    text-wrap: pretty;
+  }
+
+  .head-stats {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-top: 24px;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    color: var(--paper-faint);
+  }
+
+  .head-stats b {
+    color: var(--paper);
+    font-weight: 500;
+  }
+
+  .sep {
+    opacity: 0.4;
+  }
+
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .kdot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--k);
+  }
+
+  .chip .n {
+    font-size: 0.6rem;
+    opacity: 0.6;
+  }
+
+  .timeline {
+    margin-top: 8px;
+  }
+
+  .year-group + .year-group {
+    margin-top: 8px;
+  }
+
+  .year-head {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    padding: 42px 0 6px;
+  }
+
+  .year {
+    font-size: clamp(2.2rem, 4.6vw, 3.1rem);
+    line-height: 1;
+    letter-spacing: 0.02em;
+    color: var(--paper-strong);
+    font-variant-numeric: lining-nums tabular-nums;
+  }
+
+  .year-count {
+    font-size: 0.66rem;
+    letter-spacing: 0.1em;
+    color: var(--paper-faint);
+  }
+
+  .tl-list {
+    list-style: none;
+    border-top: 1px solid var(--line-soft);
+  }
+
+  .tl-item {
+    display: grid;
+    grid-template-columns: 74px 34px minmax(0, 1fr);
+    gap: 0;
+    padding: 22px 0;
+    border-bottom: 1px solid var(--line-soft);
+    transition: background-color 0.3s var(--ease);
+  }
+
+  .tl-item[hidden] {
+    display: none;
+  }
+
+  .tl-item:hover {
+    background: rgba(255, 255, 255, 0.014);
+  }
+
+  .tl-date {
+    padding-top: 2px;
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    color: var(--paper-faint);
+  }
+
+  .tl-rail {
+    position: relative;
+    display: flex;
+    justify-content: center;
+  }
+
+  .tl-rail::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: -22px;
+    width: 1px;
+    background: var(--line);
+  }
+
+  .tl-item:last-child .tl-rail::before {
+    bottom: auto;
+    height: 26px;
+  }
+
+  .tl-dot {
+    position: relative;
+    z-index: 1;
+    width: 7px;
+    height: 7px;
+    margin-top: 8px;
+    border-radius: 50%;
+    background: var(--ink-0);
+    border: 1px solid var(--k);
+    box-shadow: 0 0 0 3px var(--ink-0);
+  }
+
+  .tl-item:hover .tl-dot {
+    background: var(--k);
+  }
+
+  .tl-body {
+    padding-left: 6px;
+  }
+
+  .tl-top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .tl-kind {
+    font-size: 0.63rem;
+    letter-spacing: 0.12em;
+    color: var(--k);
+    border: 1px solid color-mix(in srgb, var(--k) 30%, transparent);
+    border-radius: 3px;
+    padding: 1px 7px;
+  }
+
+  .tl-tag {
+    font-size: 0.62rem;
+    letter-spacing: 0.05em;
+    color: var(--paper-faint);
+  }
+
+  .tl-tag::before {
+    content: "#";
+    opacity: 0.5;
+  }
+
+  .tl-title {
+    font-size: 1.06rem;
+    line-height: 1.5;
+    color: var(--paper-strong);
+    text-wrap: pretty;
+  }
+
+  .tl-desc {
+    margin-top: 8px;
+    max-width: 74ch;
+    font-size: 0.89rem;
+    line-height: 1.8;
+    color: var(--paper-dim);
+    text-wrap: pretty;
+  }
+
+  .tl-link {
+    display: inline-block;
+    margin-top: 12px;
+    font-size: 0.66rem;
+    letter-spacing: 0.08em;
+    color: var(--brass);
+    border-bottom: 1px solid var(--brass-line);
+    padding-bottom: 1px;
+    opacity: 0.85;
+  }
+
+  .tl-link:hover {
+    opacity: 1;
+  }
+
+  .tl-foot {
+    margin-top: 40px;
+    font-size: 0.64rem;
+    letter-spacing: 0.06em;
+    color: var(--paper-faint);
+    opacity: 0.7;
+  }
+
+  @media (max-width: 640px) {
+    .tl-item {
+      grid-template-columns: 52px 24px minmax(0, 1fr);
+    }
+    .year-head {
+      padding-top: 32px;
+    }
+    .tl-desc {
+      font-size: 0.86rem;
+    }
+  }
+</style>

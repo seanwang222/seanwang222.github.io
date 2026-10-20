@@ -1,0 +1,16 @@
+node_modules/
+dist/
+.astro/
+.env
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db
+.workbuddy/
+.shots/
+*.log
+
+# 摄影原图不入库，只提交构建后的 web 尺寸图（docs/design/resume-and-photography.md §3.6）
+photos-raw/
+# 图像生成的中间产物（PNG 原图，已另存为 prototype/assets/*.jpg）
+vibe_images/

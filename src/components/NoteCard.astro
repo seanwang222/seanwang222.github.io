@@ -1,0 +1,167 @@
+---
+import type { Note } from '../lib/notes';
+import { noteHref, readingTime } from '../lib/notes';
+
+interface Props {
+  note: Note;
+  index?: number;
+  compact?: boolean;
+}
+
+const { note, index, compact = false } = Astro.props;
+const iso = note.data.date.toISOString().slice(0, 10);
+const isEssay = note.data.kind === 'essay';
+---
+
+<a class="note-card" href={noteHref(note.id)}>
+  <div class="meta mono">
+    <span class="meta-row">
+      {index !== undefined && <span class="idx">{String(index + 1).padStart(2, '0')}</span>}
+      <time datetime={iso}>{iso.replace(/-/g, '.')}</time>
+    </span>
+    <span class="meta-row sub">
+      <span>{readingTime(note.body ?? '')} 分钟</span>
+      {isEssay && <span class="kind">随想</span>}
+    </span>
+  </div>
+
+  <div class="content">
+    <h3 class="title">{note.data.title}</h3>
+    {!compact && <p class="summary">{note.data.summary}</p>}
+    <div class="tags">
+      {note.data.tags.map((tag) => <span class="chip">{tag}</span>)}
+    </div>
+  </div>
+
+  <span class="arrow" aria-hidden="true">↗</span>
+</a>
+
+<style>
+  .note-card {
+    position: relative;
+    display: grid;
+    grid-template-columns: 128px minmax(0, 1fr) 28px;
+    gap: 28px;
+    align-items: start;
+    padding: 26px 8px 26px 0;
+    border-top: 1px solid var(--line-soft);
+    transition: background-color 0.3s var(--ease);
+  }
+
+  .note-card::before {
+    content: "";
+    position: absolute;
+    left: -16px;
+    top: 22px;
+    bottom: 22px;
+    width: 1px;
+    background: var(--brass);
+    opacity: 0;
+    transform: scaleY(0.4);
+    transition: opacity 0.3s var(--ease), transform 0.35s var(--ease);
+  }
+
+  .note-card:hover {
+    background: rgba(255, 255, 255, 0.014);
+  }
+
+  .note-card:hover::before {
+    opacity: 0.8;
+    transform: scaleY(1);
+  }
+
+  .meta {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-top: 5px;
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    color: var(--paper-faint);
+  }
+
+  .meta-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .meta-row.sub {
+    font-size: 0.66rem;
+    opacity: 0.85;
+  }
+
+  .meta .idx {
+    color: var(--brass);
+    opacity: 0.75;
+  }
+
+  .meta .kind {
+    padding: 1px 6px;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    font-size: 0.62rem;
+    color: var(--jade);
+    letter-spacing: 0.1em;
+  }
+
+  .title {
+    font-size: 1.14rem;
+    font-weight: 600;
+    color: var(--paper-strong);
+    transition: color 0.25s var(--ease);
+    text-wrap: pretty;
+  }
+
+  .note-card:hover .title {
+    color: var(--brass);
+  }
+
+  .summary {
+    margin-top: 9px;
+    font-size: 0.9rem;
+    line-height: 1.75;
+    color: var(--paper-dim);
+    max-width: 62ch;
+    text-wrap: pretty;
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 14px;
+  }
+
+  .arrow {
+    padding-top: 2px;
+    font-size: 0.95rem;
+    color: var(--paper-faint);
+    opacity: 0;
+    transform: translate(-4px, 4px);
+    transition: opacity 0.3s var(--ease), transform 0.3s var(--ease);
+  }
+
+  .note-card:hover .arrow {
+    opacity: 1;
+    transform: none;
+    color: var(--brass);
+  }
+
+  @media (max-width: 720px) {
+    .note-card {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 10px;
+      padding-block: 22px;
+    }
+    .meta {
+      padding-top: 0;
+    }
+    .arrow {
+      display: none;
+    }
+    .summary {
+      font-size: 0.87rem;
+    }
+  }
+</style>

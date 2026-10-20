@@ -1,0 +1,127 @@
+---
+import { site } from '../data/site';
+
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="col identity">
+        <div class="foot-name serif">{site.name}</div>
+        <p class="foot-tag">{site.tagline}</p>
+      </div>
+
+      <div class="col">
+        <div class="foot-label mono">站点</div>
+        <ul class="foot-list">
+          {site.nav.map((item) => (
+            <li><a class="link-quiet" href={item.href}>{item.label}</a></li>
+          ))}
+        </ul>
+      </div>
+
+      <div class="col">
+        <div class="foot-label mono">连接</div>
+        <ul class="foot-list">
+          <li><a class="link-quiet" href={site.links.github} target="_blank" rel="noreferrer">GitHub ↗</a></li>
+          <li><a class="link-quiet" href={site.links.email}>邮件</a></li>
+          <li><a class="link-quiet" href="/rss.xml">RSS</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="foot-bottom mono">
+      <span>© {year} {site.name}</span>
+      <span class="dot">·</span>
+      <span>Astro 静态构建</span>
+      <span class="dot">·</span>
+      <span>GitHub Pages 托管</span>
+      <span class="spacer"></span>
+      <span class="dim">{site.city}, CN</span>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    margin-top: clamp(60px, 10vw, 130px);
+    border-top: 1px solid var(--line);
+    background: linear-gradient(180deg, transparent, rgba(214, 167, 86, 0.018));
+  }
+
+  .foot-grid {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr 1fr;
+    gap: 40px;
+    padding-block: clamp(44px, 6vw, 72px);
+  }
+
+  .foot-name {
+    font-size: 1.35rem;
+    color: var(--paper-strong);
+    letter-spacing: -0.01em;
+  }
+
+  .foot-tag {
+    margin-top: 10px;
+    max-width: 34ch;
+    font-size: 0.88rem;
+    line-height: 1.85;
+    color: var(--paper-faint);
+  }
+
+  .foot-label {
+    font-size: 0.66rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--paper-faint);
+    margin-bottom: 16px;
+  }
+
+  .foot-list {
+    list-style: none;
+    display: grid;
+    gap: 10px;
+    font-size: 0.88rem;
+  }
+
+  .foot-list .link-quiet {
+    color: var(--paper-dim);
+    border-bottom-color: transparent;
+  }
+
+  .foot-list .link-quiet:hover {
+    color: var(--brass);
+  }
+
+  .foot-bottom {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding-block: 18px 26px;
+    border-top: 1px solid var(--line-soft);
+    font-size: 0.68rem;
+    letter-spacing: 0.04em;
+    color: var(--paper-faint);
+  }
+
+  .foot-bottom .spacer {
+    flex: 1;
+  }
+
+  .dot {
+    opacity: 0.5;
+  }
+
+  @media (max-width: 720px) {
+    .foot-grid {
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+    }
+    .identity {
+      grid-column: 1 / -1;
+    }
+  }
+</style>
