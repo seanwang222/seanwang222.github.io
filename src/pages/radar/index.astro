@@ -1,0 +1,438 @@
+---
+import Base from '../../layouts/Base.astro';
+import RadarScope from '../../components/RadarScope.astro';
+import '../../styles/radar.css';
+import {
+  buildChapters,
+  buildCurriculum,
+  getRadarNotes,
+  getTotals,
+  groupByPart,
+} from '../../lib/radar';
+
+const notes = await getRadarNotes();
+const chapters = buildChapters(notes);
+const groups = groupByPart(chapters);
+const totals = getTotals(chapters);
+const curriculum = buildCurriculum(notes);
+
+const initialPlan = [];
+let initialMinutes = 0;
+for (const item of curriculum) {
+  if (initialPlan.length >= 4) break;
+  if (initialPlan.length > 0 && initialMinutes + item.minutes > 14) break;
+  initialPlan.push(item);
+  initialMinutes += item.minutes;
+}
+
+const curriculumJson = JSON.stringify(curriculum).replace(/</g, '\\u003c');
+---
+
+<Base
+  title="雷达学习"
+  description={`《雷达系统分析与设计（MATLAB版）》分章笔记：${totals.chapters} 章、${totals.sections} 节，按每日计划推进。`}
+>
+  <header class="radar-hero wrap">
+    <div class="radar-hero-copy">
+      <div class="eyebrow" data-reveal>Daily study · Radar systems</div>
+      <h1 class="radar-title" data-reveal data-reveal-delay="60">
+        雷达系统
+        <span>分析与设计</span>
+      </h1>
+      <p class="radar-lead" data-reveal data-reveal-delay="110">
+        把《雷达系统分析与设计（MATLAB版）》拆成 {totals.sections} 节可执行的阅读单元。
+        每天按章节顺序推进几节，公式、图表与配套 MATLAB 代码都收在同一页里；
+        读完点一下圆圈，进度留在本机浏览器。
+      </p>
+
+      <div class="radar-stats mono" data-reveal data-reveal-delay="150">
+        <span><b>{totals.chapters}</b> 章</span>
+        <span class="sep">·</span>
+        <span><b>{totals.sections}</b> 节</span>
+        <span class="sep">·</span>
+        <span><b>{totals.code}</b> 篇代码实践</span>
+        <span class="sep">·</span>
+        <span>约 <b>{totals.hours}</b> 小时</span>
+        <span class="sep">·</span>
+        <span>已读 <b data-done-count>0</b> 节</span>
+      </div>
+
+      <p class="radar-hero-note" data-reveal data-reveal-delay="180">
+        第 3 版 · 18 章导读 + 117 篇分节笔记 · 每节 1—4 分钟
+      </p>
+    </div>
+
+    <RadarScope caption={`SCAN · ${totals.sections} SECTIONS`} />
+  </header>
+
+  <section class="wrap" aria-labelledby="today-heading">
+    <div class="study-board" data-study-board>
+      <div class="study-main">
+        <div class="study-head">
+          <span class="study-date" data-today>今日学习 · Today</span>
+          <span class="study-streak">连续 <b data-streak>0</b> 天</span>
+        </div>
+
+        <h2 class="study-title" id="today-heading">
+          今日计划
+          <span class="study-mode" data-plan-mode>新学</span>
+        </h2>
+        <p class="study-sub" data-plan-sub>
+          {initialPlan.length} 节 · 约 {initialMinutes} 分钟
+        </p>
+
+        <ol class="plan-list" data-plan-list>
+          {initialPlan.map((item) => (
+            <li class="plan-item" data-plan-item>
+              <button
+                class="plan-toggle"
+                type="button"
+                aria-pressed="false"
+                aria-label={`标记完成：${item.title}`}
+              >✓</button>
+              <a class="plan-link" href={item.href}>
+                <span class="plan-meta">
+                  <span>第 {item.chapter} 章</span>
+                  <span>{item.chapterTitle}</span>
+                </span>
+                <span class="plan-title">{item.title}</span>
+              </a>
+              <span class="plan-min">{item.minutes} 分钟</span>
+            </li>
+          ))}
+        </ol>
+
+        <div class="study-actions">
+          <a class="study-cta" data-plan-cta href={initialPlan[0]?.href ?? '/radar/'}>
+            开始今天的第一节 <span class="arw">→</span>
+          </a>
+          <button class="study-ghost" type="button" data-plan-refresh>换一组</button>
+        </div>
+
+        <p class="study-note">
+          进度只保存在本机浏览器，不登录、不上传；换设备不会同步。
+        </p>
+      </div>
+
+      <aside class="study-side" aria-label="学习进度">
+        <div class="progress-ring">
+          <svg viewBox="0 0 120 120" role="img" aria-label="学习进度 0%" data-ring-svg>
+            <circle class="ring-track" cx="60" cy="60" r="52"></circle>
+            <circle class="ring-fill" cx="60" cy="60" r="52" data-ring></circle>
+          </svg>
+          <div class="ring-center">
+            <b data-percent>0</b>
+            <span>%</span>
+          </div>
+        </div>
+        <div class="ring-caption" data-ring-caption>0 / {totals.sections} 节已读</div>
+
+        <div class="week-strip" data-week-strip aria-hidden="true">
+          {Array.from({ length: 7 }, () => (
+            <div class="week-day">
+              <span class="week-bar"><i></i></span>
+              <span class="week-label">·</span>
+            </div>
+          ))}
+        </div>
+
+        <div class="study-facts">
+          <div class="study-fact">
+            <span>已完成</span>
+            <b data-done>0 节</b>
+          </div>
+          <div class="study-fact">
+            <span>近 7 天</span>
+            <b data-week>0 节</b>
+          </div>
+          <div class="study-fact">
+            <span>连续学习</span>
+            <b data-streak-fact>0 天</b>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="radar-index wrap" id="chapters" aria-labelledby="chapters-heading">
+    <div class="radar-index-head">
+      <h2 class="radar-index-title" id="chapters-heading">
+        <span class="idx mono">01</span>章节目录
+      </h2>
+      <span class="radar-index-hint">{groups.length} 个部分 · {totals.chapters} 章</span>
+    </div>
+
+    {groups.map((group) => {
+      const sectionCount = group.chapters.reduce((sum, chapter) => sum + chapter.sections.length, 0);
+      return (
+        <div class="part-block">
+          <div class="part-head">
+            <span class="part-id mono">{group.id}</span>
+            <span class="part-name">{group.cn}</span>
+            <span class="part-en">{group.en}</span>
+            <span class="part-meta mono">{group.chapters.length} 章 · {sectionCount} 节</span>
+          </div>
+
+          <div class="chapter-grid">
+            {group.chapters.map((chapter) => (
+              <a
+                class="chapter-card"
+                href={chapter.href}
+                data-reveal
+                data-chapter-card
+                data-ids={chapter.sections.map((section) => section.id).join(',')}
+                aria-label={`第 ${chapter.chapter} 章 ${chapter.title}，${chapter.sections.length} 节`}
+              >
+                <div class="chapter-top">
+                  <span class="chapter-no">{chapter.slug}</span>
+                  <span class="chapter-top-right">
+                    <span class="chapter-done">✓ 已完成</span>
+                    <span class="chapter-part">{chapter.part.replace('Part ', 'P')}</span>
+                  </span>
+                </div>
+                <h3 class="chapter-title">{chapter.title}</h3>
+                <p class="chapter-en">{chapter.titleEn}</p>
+                <div class="chapter-foot">
+                  <div class="chapter-meta">
+                    <span>{chapter.sections.length} 节 · 约 {chapter.minutes} 分钟</span>
+                    <span class="chapter-count" data-chapter-count>0 / {chapter.sections.length}</span>
+                  </div>
+                  <div class="chapter-meter"><i data-chapter-meter></i></div>
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      );
+    })}
+  </section>
+
+  <script type="application/json" id="radar-curriculum" set:html={curriculumJson} />
+</Base>
+
+<script>
+  import {
+    STORAGE_KEY,
+    ensurePlan,
+    firstUnread,
+    loadState,
+    planItems,
+    refreshPlan,
+    streakOf,
+    toggleDone,
+    weekOf,
+    type PlanItem,
+    type RadarState,
+  } from '../../scripts/radar-progress';
+
+  const dataEl = document.getElementById('radar-curriculum');
+  const curriculum: PlanItem[] = dataEl?.textContent
+    ? JSON.parse(dataEl.textContent)
+    : [];
+
+  const planList = document.querySelector<HTMLOListElement>('[data-plan-list]');
+  const planMode = document.querySelector<HTMLElement>('[data-plan-mode]');
+  const planSub = document.querySelector<HTMLElement>('[data-plan-sub]');
+  const planCta = document.querySelector<HTMLAnchorElement>('[data-plan-cta]');
+  const refreshBtn = document.querySelector<HTMLButtonElement>('[data-plan-refresh]');
+  const ring = document.querySelector<SVGCircleElement>('[data-ring]');
+  const ringSvg = document.querySelector<SVGSVGElement>('[data-ring-svg]');
+  const percentEl = document.querySelector<HTMLElement>('[data-percent]');
+  const ringCaption = document.querySelector<HTMLElement>('[data-ring-caption]');
+  const doneEl = document.querySelector<HTMLElement>('[data-done]');
+  const weekEl = document.querySelector<HTMLElement>('[data-week]');
+  const streakEl = document.querySelector<HTMLElement>('[data-streak]');
+  const streakFactEl = document.querySelector<HTMLElement>('[data-streak-fact]');
+  const heroDoneEl = document.querySelector<HTMLElement>('[data-done-count]');
+  const weekStrip = document.querySelector<HTMLElement>('[data-week-strip]');
+  const todayEl = document.querySelector<HTMLElement>('[data-today]');
+
+  const CIRCUMFERENCE = 2 * Math.PI * 52;
+  const state: RadarState = loadState();
+  let plan = ensurePlan(state, curriculum);
+
+  function make<T extends keyof HTMLElementTagNameMap>(
+    tag: T,
+    className?: string,
+    text?: string
+  ): HTMLElementTagNameMap[T] {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text !== undefined) node.textContent = text;
+    return node;
+  }
+
+  function render(): void {
+    renderPlan();
+    renderProgress();
+    renderWeek();
+    renderChapters();
+    renderDate();
+  }
+
+  function renderPlan(): void {
+    if (!planList) return;
+    const items = planItems(plan, curriculum);
+    const isReview = plan.mode === 'review';
+    planList.classList.toggle('is-review', isReview);
+    planList.replaceChildren();
+
+    const done = items.filter((item) => state.done[item.id]).length;
+    const minutes = items.reduce((sum, item) => sum + item.minutes, 0);
+
+    if (planMode) {
+      planMode.textContent = isReview ? '复习' : '新学';
+      planMode.classList.toggle('is-review', isReview);
+    }
+    if (planSub) {
+      planSub.textContent = isReview
+        ? `全部 ${curriculum.length} 节已读完，今天从旧章节里抽 ${items.length} 节回看。`
+        : `${items.length} 节 · 约 ${minutes} 分钟 · 按章节顺序`;
+    }
+
+    for (const item of items) {
+      const isDone = Boolean(state.done[item.id]);
+      const row = make('li', 'plan-item');
+      row.classList.toggle('is-done', isDone);
+
+      const toggle = make('button', 'plan-toggle', '✓');
+      toggle.type = 'button';
+      toggle.setAttribute('aria-pressed', String(isDone));
+      toggle.setAttribute(
+        'aria-label',
+        `${isDone ? '取消完成' : '标记完成'}：${item.title}`
+      );
+      toggle.addEventListener('click', () => {
+        toggleDone(state, item.id);
+        render();
+      });
+
+      const link = make('a', 'plan-link') as HTMLAnchorElement;
+      link.href = item.href;
+
+      const meta = make('span', 'plan-meta');
+      meta.append(
+        make('span', undefined, `第 ${item.chapter} 章`),
+        make('span', undefined, item.chapterTitle)
+      );
+      link.append(meta, make('span', 'plan-title', item.title));
+
+      row.append(toggle, link, make('span', 'plan-min', `${item.minutes} 分钟`));
+      planList.append(row);
+    }
+
+    if (items.length === 0) {
+      planList.append(make('li', 'plan-empty', '还没有可安排的章节。'));
+    }
+
+    if (planCta) {
+      const allDone = items.length > 0 && done === items.length;
+      const next = firstUnread(state, curriculum);
+      if (isReview) {
+        planCta.href = items[0]?.href ?? '#chapters';
+        planCta.innerHTML = '开始复习 <span class="arw">→</span>';
+      } else if (allDone && next) {
+        planCta.href = next.href;
+        planCta.innerHTML = '今日完成 · 再学一节 <span class="arw">→</span>';
+      } else if (allDone) {
+        planCta.href = '#chapters';
+        planCta.innerHTML = '全部学完 · 回看章节 <span class="arw">→</span>';
+      } else {
+        const target = items.find((item) => !state.done[item.id]) ?? items[0];
+        planCta.href = target.href;
+        planCta.innerHTML = `${done > 0 ? '继续今日计划' : '开始今天的第一节'} <span class="arw">→</span>`;
+      }
+    }
+  }
+
+  function renderProgress(): void {
+    const total = curriculum.length;
+    const count = curriculum.filter((item) => state.done[item.id]).length;
+    const ratio = total > 0 ? count / total : 0;
+    const percent = Math.round(ratio * 100);
+
+    if (ring) {
+      ring.style.strokeDashoffset = String(CIRCUMFERENCE * (1 - ratio));
+    }
+    if (percentEl) percentEl.textContent = String(percent);
+    if (ringSvg) ringSvg.setAttribute('aria-label', `学习进度 ${percent}%`);
+    if (ringCaption) ringCaption.textContent = `${count} / ${total} 节已读`;
+    if (doneEl) doneEl.textContent = `${count} 节`;
+    if (heroDoneEl) heroDoneEl.textContent = String(count);
+
+    const weekStart = new Date();
+    weekStart.setHours(0, 0, 0, 0);
+    weekStart.setDate(weekStart.getDate() - 6);
+    const weekCount = curriculum.filter(
+      (item) => (state.done[item.id] ?? 0) >= weekStart.getTime()
+    ).length;
+    if (weekEl) weekEl.textContent = `${weekCount} 节`;
+
+    const streak = streakOf(state);
+    if (streakEl) streakEl.textContent = String(streak);
+    if (streakFactEl) streakFactEl.textContent = `${streak} 天`;
+  }
+
+  function renderWeek(): void {
+    if (!weekStrip) return;
+    const days = weekOf(state);
+    weekStrip.replaceChildren();
+    for (const day of days) {
+      const cell = make('div', 'week-day');
+      cell.classList.toggle('has-work', day.active);
+      cell.classList.toggle('is-today', day.today);
+      cell.title = `${day.key} · ${day.count} 节`;
+
+      const bar = make('span', 'week-bar');
+      const fill = document.createElement('i');
+      fill.style.height =
+        day.count > 0 ? `${Math.min(100, 24 + day.count * 18)}%` : day.active ? '10%' : '5%';
+      bar.append(fill);
+
+      cell.append(bar, make('span', 'week-label', day.weekday));
+      weekStrip.append(cell);
+    }
+  }
+
+  function renderChapters(): void {
+    for (const card of document.querySelectorAll<HTMLElement>('[data-chapter-card]')) {
+      const ids = (card.dataset.ids ?? '').split(',').filter(Boolean);
+      const total = ids.length;
+      const count = ids.filter((id) => state.done[id]).length;
+      const ratio = total > 0 ? count / total : 0;
+      card.classList.toggle('is-complete', total > 0 && count === total);
+      const countEl = card.querySelector<HTMLElement>('[data-chapter-count]');
+      if (countEl) countEl.textContent = `${count} / ${total}`;
+      const meter = card.querySelector<HTMLElement>('[data-chapter-meter]');
+      if (meter) meter.style.width = `${ratio * 100}%`;
+    }
+  }
+
+  function renderDate(): void {
+    if (!todayEl) return;
+    const text = new Intl.DateTimeFormat('zh-CN', {
+      month: 'long',
+      day: 'numeric',
+      weekday: 'long',
+    }).format(new Date());
+    todayEl.textContent = `今日学习 · ${text}`;
+  }
+
+  refreshBtn?.addEventListener('click', () => {
+    plan = refreshPlan(state, curriculum);
+    render();
+  });
+
+  window.addEventListener('storage', (event) => {
+    if (event.key === STORAGE_KEY) window.location.reload();
+  });
+
+  window.addEventListener('pageshow', (event) => {
+    if (!event.persisted) return;
+    Object.assign(state, loadState());
+    plan = ensurePlan(state, curriculum);
+    render();
+  });
+
+  render();
+</script>

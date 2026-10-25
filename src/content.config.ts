@@ -22,4 +22,26 @@ const notes = defineCollection({
   }),
 });
 
-export const collections = { notes };
+/**
+ * 雷达学习 = 教材的章节树。
+ * chapter 是每章导读，section 是拆分后的分节笔记，code 是配套 MATLAB 代码解读。
+ */
+const radar = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/radar' }),
+  schema: z.object({
+    title: z.string(),
+    titleEn: z.string().default(''),
+    summary: z.string(),
+    part: z.string(),
+    chapter: z.number().int(),
+    chapterTitle: z.string(),
+    chapterTitleEn: z.string(),
+    section: z.string(),
+    kind: z.enum(['chapter', 'section', 'code']),
+    order: z.number(),
+    tags: z.array(z.string()).default([]),
+    source: z.string().optional(),
+  }),
+});
+
+export const collections = { notes, radar };

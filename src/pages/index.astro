@@ -1,9 +1,12 @@
 ---
 import Base from '../layouts/Base.astro';
 import NoteCard from '../components/NoteCard.astro';
+import RadarScope from '../components/RadarScope.astro';
+import '../styles/radar.css';
 import { site } from '../data/site';
 import { timeline, kindMeta } from '../data/timeline';
 import { getNotes, buildGraph } from '../lib/notes';
+import { buildChapters, getRadarNotes, getTotals } from '../lib/radar';
 import github from '../data/github.json';
 
 const notes = await getNotes();
@@ -11,6 +14,7 @@ const featured = notes.filter((note) => note.data.featured).slice(0, 3);
 const graph = buildGraph(notes);
 const linkCount = graph.links.filter((link) => link.type === 'link').length;
 const latestNote = notes[0];
+const radarTotals = getTotals(buildChapters(await getRadarNotes()));
 const recentEvents = [...timeline]
   .sort((a, b) => (a.date < b.date ? 1 : -1))
   .slice(0, 4);
@@ -107,6 +111,27 @@ const entries = [
         </div>
       </aside>
     </div>
+  </section>
+
+  <section class="wrap radar-band">
+    <a class="radar-promo" href="/radar/" data-reveal>
+      <RadarScope class="radar-promo-scope" caption="RADAR" />
+      <div class="radar-promo-body">
+        <div class="eyebrow">Daily study · 雷达系统</div>
+        <h2 class="radar-promo-title">雷达系统分析与设计</h2>
+        <p class="radar-promo-desc">
+          《雷达系统分析与设计（MATLAB版）》的 18 章导读与 117 篇分节笔记。
+          每天按章节顺序读几节，公式、图表和配套代码都在同一页，读完点一下就算完成。
+        </p>
+        <div class="radar-promo-meta mono">
+          <span>{radarTotals.chapters} 章</span>
+          <span>{radarTotals.sections} 节</span>
+          <span>{radarTotals.code} 篇代码实践</span>
+          <span>约 {radarTotals.hours} 小时</span>
+        </div>
+      </div>
+      <span class="radar-promo-cta">今日学习 →</span>
+    </a>
   </section>
 
   <section class="section wrap">

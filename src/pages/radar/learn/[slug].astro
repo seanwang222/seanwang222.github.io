@@ -1,0 +1,257 @@
+---
+import { render } from 'astro:content';
+import Base from '../../../layouts/Base.astro';
+import '../../../styles/radar.css';
+import 'katex/dist/katex.min.css';
+import {
+  buildOutline,
+  chapterHref,
+  getRadarNotes,
+  radarHref,
+  radarMinutes,
+} from '../../../lib/radar';
+
+export async function getStaticPaths() {
+  const notes = await getRadarNotes();
+  const outline = buildOutline(notes);
+  return outline.map((note, index) => {
+    const chapterSize = notes.filter(
+      (item) => item.data.kind === 'section' && item.data.chapter === note.data.chapter
+    ).length;
+    return {
+      params: { slug: note.id },
+      props: {
+        note,
+        chapterSize,
+        prev: outline[index - 1] ?? null,
+        next: outline[index + 1] ?? null,
+      },
+    };
+  });
+}
+
+const { note, chapterSize, prev, next } = Astro.props;
+const { Content, headings } = await render(note);
+const minutes = radarMinutes(note);
+const toc = headings.filter((heading) => heading.depth <= 3);
+const isCode = note.data.kind === 'code';
+const kindLabel = isCode ? '代码实践' : note.data.kind === 'chapter' ? '章节导读' : '分节笔记';
+const doneHint = isCode
+  ? '读完这篇代码实践了吗？标记后会记录今日学习，但不计入 117 节正文进度。'
+  : '读完这一节了吗？标记后会计入本章与总进度。';
+---
+
+<Base title={note.data.title} description={note.data.summary} type="article">
+  <div class="learn-progress" data-progress aria-hidden="true"></div>
+
+  <article class="learn-article wrap" data-kind={note.data.kind}>
+    <header class="learn-head">
+      <nav class="crumbs" aria-label="面包屑">
+        <a href="/radar/">雷达学习</a>
+        <span class="slash">/</span>
+        <a href={chapterHref(note.data.chapter)}>第 {note.data.chapter} 章</a>
+        <span class="slash">/</span>
+        <span>{note.data.section === '0' ? kindLabel : `第 ${note.data.section} 节`}</span>
+      </nav>
+
+      <div class="learn-tags">
+        {note.data.tags.map((tag) => <span class="chip">{tag}</span>)}
+      </div>
+
+      <h1 class="learn-title">{note.data.title}</h1>
+      {note.data.titleEn && <p class="learn-title-en">{note.data.titleEn}</p>}
+      <p class="learn-summary">{note.data.summary}</p>
+
+      <div class="learn-meta-row">
+        <div class="learn-meta">
+          <span>{kindLabel}</span>
+          <span class="sep">·</span>
+          <span>第 {note.data.chapter} 章 · {chapterSize} 节</span>
+          <span class="sep">·</span>
+          <span>约 {minutes} 分钟</span>
+        </div>
+        <button
+          class="complete-btn"
+          type="button"
+          data-complete
+          data-id={note.id}
+          aria-pressed="false"
+        >
+          <span class="tick" aria-hidden="true">✓</span>
+          <span data-complete-label>{isCode ? '标记读完' : '标记本节完成'}</span>
+        </button>
+      </div>
+    </header>
+
+    <div class="learn-grid">
+      <div class="learn-body">
+        <div class="prose">
+          <Content />
+        </div>
+
+        <div class="learn-finish">
+          <p data-finish-text>{doneHint}</p>
+          <button
+            class="complete-btn"
+            type="button"
+            data-complete
+            data-id={note.id}
+            aria-pressed="false"
+          >
+            <span class="tick" aria-hidden="true">✓</span>
+            <span data-complete-label>{isCode ? '标记读完' : '标记本节完成'}</span>
+          </button>
+        </div>
+
+        <nav class="learn-pager" aria-label="上下节">
+          {prev ? (
+            <a href={radarHref(prev)}>
+              <span class="label mono">← 上一节</span>
+              <span class="title">{prev.data.title}</span>
+            </a>
+          ) : (
+            <span class="empty" aria-hidden="true"></span>
+          )}
+          {next ? (
+            <a class="next" href={radarHref(next)}>
+              <span class="label mono">下一节 →</span>
+              <span class="title">{next.data.title}</span>
+            </a>
+          ) : (
+            <span class="empty" aria-hidden="true"></span>
+          )}
+        </nav>
+
+        {note.data.source && (
+          <p class="learn-source mono">{note.data.source}</p>
+        )}
+      </div>
+
+      <aside class="learn-aside">
+        {toc.length > 0 && (
+          <div>
+            <div class="aside-label mono">目录</div>
+            <ul class="toc-list">
+              {toc.map((heading) => (
+                <li class:list={[`d${heading.depth}`]}>
+                  <a href={`#${heading.slug}`} data-toc-link={heading.slug}>{heading.text}</a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        <div>
+          <div class="aside-label mono">所在章节</div>
+          <a class="chapter-link" href={chapterHref(note.data.chapter)}>
+            <small>{note.data.part} · Chapter {note.data.chapter}</small>
+            {note.data.chapterTitle}
+          </a>
+        </div>
+      </aside>
+    </div>
+  </article>
+</Base>
+
+<script>
+  import {
+    loadState,
+    markSeen,
+    toggleDone,
+    type RadarState,
+  } from '../../../scripts/radar-progress';
+  import { renderMermaidBlocks } from '../../../scripts/radar-mermaid';
+
+  const state: RadarState = loadState();
+  markSeen(state);
+
+  const progress = document.querySelector<HTMLElement>('[data-progress]');
+  const body = document.querySelector<HTMLElement>('.learn-body');
+  const buttons = [...document.querySelectorAll<HTMLButtonElement>('[data-complete]')];
+  const tocLinks = [...document.querySelectorAll<HTMLAnchorElement>('[data-toc-link]')];
+  const finishText = document.querySelector<HTMLElement>('[data-finish-text]');
+  const noteId = buttons[0]?.dataset.id ?? '';
+  const isCode = document.querySelector<HTMLElement>('.learn-article')?.dataset.kind === 'code';
+  const idleLabel = isCode ? '标记读完' : '标记本节完成';
+  const idleHint = isCode
+    ? '读完这篇代码实践了吗？标记后会记录今日学习，但不计入 117 节正文进度。'
+    : '读完这一节了吗？标记后会计入本章与总进度。';
+  const doneHint = isCode
+    ? '这篇代码实践已标记读完，可以继续下一章的分节。'
+    : '这一节已标记完成。继续下一节，或在右侧回到本章目录。';
+
+  function syncComplete(): void {
+    const done = Boolean(state.done[noteId]);
+    for (const button of buttons) {
+      button.setAttribute('aria-pressed', String(done));
+      const label = button.querySelector<HTMLElement>('[data-complete-label]');
+      if (label) label.textContent = done ? '已完成 · 点击撤销' : idleLabel;
+      button.setAttribute(
+        'aria-label',
+        done ? `取消完成：${idleLabel}` : idleLabel
+      );
+    }
+    if (finishText) {
+      finishText.textContent = done ? doneHint : idleHint;
+    }
+  }
+
+  for (const button of buttons) {
+    button.addEventListener('click', () => {
+      if (!noteId) return;
+      toggleDone(state, noteId);
+      syncComplete();
+    });
+  }
+
+  syncComplete();
+
+  function onScroll(): void {
+    if (!progress || !body) return;
+    const rect = body.getBoundingClientRect();
+    const total = rect.height - window.innerHeight * 0.4;
+    const passed = Math.min(Math.max(-rect.top + 120, 0), Math.max(total, 1));
+    progress.style.transform = `scaleX(${passed / Math.max(total, 1)})`;
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  window.addEventListener('pageshow', (event) => {
+    if (!event.persisted) return;
+    Object.assign(state, loadState());
+    syncComplete();
+    onScroll();
+  });
+
+  if (tocLinks.length) {
+    const headings = tocLinks
+      .map((link) => document.getElementById(link.dataset.tocLink ?? ''))
+      .filter((el): el is HTMLElement => Boolean(el));
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          const id = entry.target.id;
+          tocLinks.forEach((link) => {
+            link.classList.toggle('active', link.dataset.tocLink === id);
+          });
+        }
+      },
+      { rootMargin: '-96px 0px -68% 0px', threshold: 0 }
+    );
+    headings.forEach((heading) => observer.observe(heading));
+  }
+
+  renderMermaidBlocks(document.querySelector('.learn-body') ?? document);
+</script>
+
+<style>
+  .learn-source {
+    margin-top: 28px;
+    font-size: 0.62rem;
+    letter-spacing: 0.06em;
+    color: var(--paper-faint);
+  }
+</style>

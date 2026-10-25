@@ -11,7 +11,7 @@ const escape = (value: string) =>
 
 export const GET: APIRoute = async ({ site: astroSite }) => {
   const notes = await getNotes();
-  const origin = (astroSite ?? new URL('https://wangsichen222.github.io')).href.replace(/\/$/, '');
+  const origin = (astroSite ?? new URL('https://seanwang222.github.io')).href.replace(/\/$/, '');
 
   const items = notes
     .map(

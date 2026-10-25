@@ -1,7 +1,7 @@
 {
   "fetchedAt": "2026-10-19T14:40:20.811Z",
   "user": {
-    "login": "wangsichen222",
+    "login": "seanwang222",
     "name": "SeanHub",
     "avatar": "https://avatars.githubusercontent.com/u/59314215?v=4",
     "bio": null,
@@ -114,7 +114,7 @@
     {
       "name": "DayMark",
       "description": "每日打卡 · 待办清单 · 日程管理桌面应用（React 18 + Vite 4 + Electron 44，坚果云 WebDAV 同步，本地优先）",
-      "url": "https://github.com/wangsichen222/DayMark",
+      "url": "https://github.com/seanwang222/DayMark",
       "stars": 0,
       "language": "JavaScript",
       "pushedAt": "2026-10-18T03:03:42Z",
@@ -124,9 +124,9 @@
       "lastCommitAt": "2026-10-18T03:02:54Z"
     },
     {
-      "name": "wangsichen222",
+      "name": "seanwang222",
       "description": "",
-      "url": "https://github.com/wangsichen222/wangsichen222",
+      "url": "https://github.com/seanwang222/seanwang222",
       "stars": 0,
       "language": "—",
       "pushedAt": "2026-02-21T12:27:06Z",

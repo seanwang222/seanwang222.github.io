@@ -1,0 +1,227 @@
+---
+import { render } from 'astro:content';
+import Base from '../../../layouts/Base.astro';
+import '../../../styles/radar.css';
+import 'katex/dist/katex.min.css';
+import {
+  buildChapters,
+  chapterHref,
+  getRadarNotes,
+  radarHref,
+  radarMinutes,
+} from '../../../lib/radar';
+
+export async function getStaticPaths() {
+  const notes = await getRadarNotes();
+  const chapters = buildChapters(notes);
+  return chapters.map((bundle, index) => ({
+    params: { chapter: bundle.slug },
+    props: {
+      bundle,
+      prev: chapters[index - 1] ?? null,
+      next: chapters[index + 1] ?? null,
+    },
+  }));
+}
+
+const { bundle, prev, next } = Astro.props;
+const { Content } = await render(bundle.overview);
+const total = bundle.sections.length;
+const firstSection = bundle.sections[0];
+
+function stripNumber(title: string, section: string): string {
+  return title.startsWith(`${section} `) ? title.slice(section.length + 1) : title;
+}
+---
+
+<Base
+  title={`第${bundle.chapter}章 ${bundle.title}`}
+  description={bundle.summary}
+  type="article"
+>
+  <header class="chapter-hero wrap">
+    <nav class="crumbs" aria-label="面包屑">
+      <a href="/radar/">雷达学习</a>
+      <span class="slash">/</span>
+      <span>{bundle.part}</span>
+      <span class="slash">/</span>
+      <span>第 {bundle.chapter} 章</span>
+    </nav>
+
+    <div class="chapter-hero-grid">
+      <div class="chapter-badge" aria-hidden="true">
+        {bundle.slug}
+        <small>{bundle.part}</small>
+      </div>
+
+      <div class="chapter-headline">
+        <h1>第 {bundle.chapter} 章 · {bundle.title}</h1>
+        <div class="en">{bundle.titleEn}</div>
+        <p class="summary">{bundle.summary}</p>
+      </div>
+
+      <div class="chapter-progress-card">
+        <div class="chapter-progress-label">
+          <span>本章进度</span>
+          <b data-chapter-count>0 / {total}</b>
+        </div>
+        <div class="chapter-meter"><i data-chapter-meter></i></div>
+        <div class="chapter-progress-foot" data-chapter-foot>
+          0 节已读 · {total} 节待读
+        </div>
+        {firstSection && (
+          <a class="study-ghost" href={radarHref(firstSection)}>从第一节开始 →</a>
+        )}
+      </div>
+    </div>
+  </header>
+
+  <section class="chapter-overview wrap" data-overview>
+    <div class="prose">
+      <Content />
+    </div>
+  </section>
+
+  <section class="chapter-section-block wrap">
+    <div class="block-head">
+      <h2 class="block-title"><span class="idx mono">01</span>分节笔记</h2>
+      <span class="block-hint mono">{total} 节 · 约 {bundle.minutes} 分钟</span>
+    </div>
+
+    <ol class="section-list">
+      {bundle.sections.map((section) => (
+        <li class="section-row" data-section-row data-id={section.id} data-counted="true">
+          <span class="section-no">{section.data.section}</span>
+          <div class="section-main">
+            <a class="section-title" href={radarHref(section)}>
+              {stripNumber(section.data.title, section.data.section)}
+            </a>
+            <div class="section-en">{section.data.titleEn}</div>
+            <p class="section-summary">{section.data.summary}</p>
+          </div>
+          <span class="section-min">{radarMinutes(section)} 分钟</span>
+          <button
+            class="section-toggle"
+            type="button"
+            aria-pressed="false"
+            aria-label={`标记完成：${section.data.title}`}
+            data-toggle
+          >✓</button>
+        </li>
+      ))}
+    </ol>
+
+    {bundle.code && (
+      <div class="code-practice" data-section-row data-id={bundle.code.id}>
+        <div class="code-practice-text">
+          <div class="code-practice-label">MATLAB · 选读</div>
+          <div class="code-practice-title">{bundle.code.data.title}</div>
+          <p class="code-practice-desc">
+            {radarMinutes(bundle.code)} 分钟 · {bundle.code.data.summary}
+          </p>
+        </div>
+        <a class="study-ghost" href={radarHref(bundle.code)}>阅读代码笔记 →</a>
+        <button
+          class="section-toggle"
+          type="button"
+          aria-pressed="false"
+          aria-label={`标记完成：${bundle.code.data.title}`}
+          data-toggle
+        >✓</button>
+      </div>
+    )}
+  </section>
+
+  <nav class="chapter-pager wrap" aria-label="章节切换">
+    {prev ? (
+      <a href={chapterHref(prev.chapter)}>
+        <span class="label mono">← 上一章</span>
+        <span class="title">第 {prev.chapter} 章 · {prev.title}</span>
+      </a>
+    ) : (
+      <span class="empty" aria-hidden="true"></span>
+    )}
+    {next ? (
+      <a class="next" href={chapterHref(next.chapter)}>
+        <span class="label mono">下一章 →</span>
+        <span class="title">第 {next.chapter} 章 · {next.title}</span>
+      </a>
+    ) : (
+      <span class="empty" aria-hidden="true"></span>
+    )}
+  </nav>
+
+  <div class="chapter-tail" aria-hidden="true"></div>
+</Base>
+
+<script>
+  import {
+    loadState,
+    markSeen,
+    toggleDone,
+    type RadarState,
+  } from '../../../scripts/radar-progress';
+  import { renderMermaidBlocks } from '../../../scripts/radar-mermaid';
+
+  const state: RadarState = loadState();
+  markSeen(state);
+
+  const rows = [...document.querySelectorAll<HTMLElement>('[data-section-row]')];
+  const counted = rows.filter((row) => row.dataset.counted === 'true');
+  const countEl = document.querySelector<HTMLElement>('[data-chapter-count]');
+  const meterEl = document.querySelector<HTMLElement>('[data-chapter-meter]');
+  const footEl = document.querySelector<HTMLElement>('[data-chapter-foot]');
+
+  function sync(): void {
+    for (const row of rows) {
+      const done = Boolean(state.done[row.dataset.id ?? '']);
+      row.classList.toggle('is-done', done);
+      const button = row.querySelector<HTMLButtonElement>('[data-toggle]');
+      if (button) {
+        button.setAttribute('aria-pressed', String(done));
+        button.title = done ? '取消完成' : '标记完成';
+      }
+    }
+
+    const done = counted.filter((row) => state.done[row.dataset.id ?? '']).length;
+    const total = counted.length;
+    if (countEl) countEl.textContent = `${done} / ${total}`;
+    if (meterEl) {
+      meterEl.style.width = total > 0 ? `${(done / total) * 100}%` : '0%';
+    }
+    if (footEl) {
+      footEl.textContent =
+        done === total && total > 0
+          ? '本章已读完，可以进入下一章。'
+          : `${done} 节已读 · ${total - done} 节待读`;
+    }
+  }
+
+  for (const row of rows) {
+    row.querySelector<HTMLButtonElement>('[data-toggle]')?.addEventListener('click', () => {
+      const id = row.dataset.id;
+      if (!id) return;
+      toggleDone(state, id);
+      sync();
+    });
+  }
+
+  sync();
+  renderMermaidBlocks(document.querySelector('[data-overview]') ?? document);
+
+  window.addEventListener('pageshow', (event) => {
+    if (!event.persisted) return;
+    Object.assign(state, loadState());
+    sync();
+  });
+</script>
+
+<style>
+  .chapter-hero .crumbs {
+    margin-bottom: 24px;
+  }
+
+  .chapter-tail {
+    height: clamp(40px, 6vw, 72px);
+  }
+</style>

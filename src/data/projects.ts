@@ -22,7 +22,7 @@ export const projects: Project[] = [
     stack: ['Electron 44', 'React 18', 'Vite 4', 'WebDAV', 'safeStorage'],
     status: '持续开发 · v1.1.4',
     period: '2026.10 — 至今',
-    repo: 'https://github.com/wangsichen222/DayMark',
+    repo: 'https://github.com/seanwang222/DayMark',
     featured: true,
     highlights: [
       {
@@ -53,7 +53,7 @@ export const projects: Project[] = [
     stack: ['Markdown', 'Mermaid', 'Structurizr DSL'],
     status: '随代码演进',
     period: '2026.10',
-    repo: 'https://github.com/wangsichen222/DayMark/tree/master/docs/architecture',
+    repo: 'https://github.com/seanwang222/DayMark/tree/master/docs/architecture',
     highlights: [
       {
         title: 'persistence.md',
@@ -79,7 +79,7 @@ export const projects: Project[] = [
     stack: ['Astro 5', 'TypeScript', 'Canvas', 'GitHub Actions'],
     status: '运行中',
     period: '2026.10 — 至今',
-    repo: 'https://github.com/wangsichen222/wangsichen222.github.io',
+    repo: 'https://github.com/seanwang222/seanwang222.github.io',
     highlights: [
       {
         title: '内容即仓库',

@@ -1,7 +1,7 @@
 # 设计规范：个人电子简历 `/resume/` 与摄影作品集 `/photos/`
 
 状态：设计稿（未实现）。配套原型：`docs/design/prototype/index.html`（可直接双击在浏览器打开）。
-适用仓库：`wangsichen222.github.io`（Astro 5.18 全静态，GitHub Pages）。
+适用仓库：`seanwang222.github.io`（Astro 5.18 全静态，GitHub Pages）。
 
 ---
 
@@ -191,8 +191,8 @@ window.addEventListener('afterprint', () => root.classList.remove('is-print'));
   "name": "Sichen Wang",
   "jobTitle": "前端 / 桌面应用开发",
   "email": "mailto:…",
-  "url": "https://wangsichen222.github.io/resume/",
-  "sameAs": ["https://github.com/wangsichen222"],
+  "url": "https://seanwang222.github.io/resume/",
+  "sameAs": ["https://github.com/seanwang222"],
   "address": { "@type": "PostalAddress", "addressLocality": "合肥", "addressCountry": "CN" }
 }
 ```

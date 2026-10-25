@@ -11,7 +11,7 @@
 import { writeFile, readFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 
-const OWNER = process.env.GH_OWNER ?? 'wangsichen222';
+const OWNER = process.env.GH_OWNER ?? 'seanwang222';
 const TOKEN = process.env.GH_TOKEN ?? '';
 const OUT = path.resolve(process.cwd(), 'src/data/github.json');
 const TZ = 'Asia/Shanghai';

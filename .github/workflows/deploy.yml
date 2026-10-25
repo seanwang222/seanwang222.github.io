@@ -34,7 +34,7 @@ jobs:
         # 每次构建前重新拉一次提交数据；没有 token 时退化为仓库里已提交的 github.json
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_OWNER: wangsichen222
+          GH_OWNER: seanwang222
         run: npm run fetch:github
 
       - name: Build site

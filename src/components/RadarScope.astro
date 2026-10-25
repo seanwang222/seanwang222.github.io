@@ -1,0 +1,16 @@
+---
+interface Props {
+  class?: string;
+  caption?: string;
+}
+
+const { class: className, caption = 'SECTOR SCAN' } = Astro.props;
+---
+
+<div class:list={['scope', className]} aria-hidden="true">
+  <span class="scope-sweep"></span>
+  <span class="scope-blip b1"></span>
+  <span class="scope-blip b2"></span>
+  <span class="scope-blip b3"></span>
+  <span class="scope-caption">{caption}</span>
+</div>
