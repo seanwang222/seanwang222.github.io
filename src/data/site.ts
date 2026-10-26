@@ -1,5 +1,5 @@
 export const site = {
-  name: 'Sichen Wang',
+  name: 'Sean Wang',
   handle: 'SeanHub',
   githubUser: 'seanwang222',
   city: '合肥',

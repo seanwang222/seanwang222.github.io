@@ -181,14 +181,14 @@ window.addEventListener('afterprint', () => root.classList.remove('is-print'));
 
 ### 2.6 结构化数据与 SEO
 
-- `<title>`：`简历 · Sichen Wang`（沿用 `Base.astro` 的 `${title} · ${site.name}` 规则）。
+- `<title>`：`简历 · Sean Wang`（沿用 `Base.astro` 的 `${title} · ${site.name}` 规则）。
 - JSON-LD（放 `Base` 的 `head` slot，仅 `/resume/` 注入）：
 
 ```json
 {
   "@context": "https://schema.org",
   "@type": "Person",
-  "name": "Sichen Wang",
+  "name": "Sean Wang",
   "jobTitle": "前端 / 桌面应用开发",
   "email": "mailto:…",
   "url": "https://seanwang222.github.io/resume/",
@@ -344,7 +344,7 @@ scripts/build-photos.mjs    # 读 photos-raw → 生成尺寸 → 写/更新 md 
 
 ### 3.7 许可与隐私
 
-- 页尾固定一行许可声明，默认「© 年份 Sichen Wang · 署名为主、禁止商用（CC BY-NC 4.0）」，具体由你定；同时给每帧 `caption` 留 `rights` 覆盖位。
+- 页尾固定一行许可声明，默认「© 年份 Sean Wang · 署名为主、禁止商用（CC BY-NC 4.0）」，具体由你定；同时给每帧 `caption` 留 `rights` 覆盖位。
 - GPS 由构建脚本强制剥离（3.6 第 3 条），不依赖人工记得。
 - 出现可识别人脸/车牌的帧，发布前自行判断是否处理；`draft: true` 就是为此保留的闸门。
 - 右键保存拦不住也不打算拦；水印只加在 `caption` 里，不糊在画面上。
